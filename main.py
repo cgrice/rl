@@ -5,8 +5,12 @@ SCREEN_WIDTH = 80
 SCREEN_HEIGHT = 50
 LIMIT_FPS = 20
 
-tdl.set_font('dundalk12x12_gs_tc.png', greyscale=True, altLayout=True)
-console = tdl.init(SCREEN_WIDTH, SCREEN_HEIGHT, title="Roguelike", fullscreen=False)
+def renderEntites(console):
+    for entity in entities:
+        entity.draw(console)
+    tdl.flush()
+    for entity in entities:
+        entity.clear(console)
 
 def handleInput():
     dx = 0
@@ -31,24 +35,20 @@ def handleInput():
 
     return False, (dx, dy)
     
+tdl.set_font('dundalk12x12_gs_tc.png', greyscale=True, altLayout=True)
+console = tdl.init(SCREEN_WIDTH, SCREEN_HEIGHT, title="Roguelike", fullscreen=False)
 entities = []
 player = Entity(SCREEN_WIDTH//2, SCREEN_HEIGHT//2, '@', (255,255,255))
 npc = Entity(10, 10, 'N', (255,0,0))
 entities.append(player)
 entities.append(npc)
 
+renderEntites(console)
 
 while not tdl.event.is_window_closed():
-    for entity in entities:
-        entity.draw(console)
-
-    tdl.flush()
-
-    for entity in entities:
-        entity.clear(console)
-
     exit_game, delta = handleInput()
     player.move(*delta)
+    renderEntites(console)
     if exit_game:
         break
 
