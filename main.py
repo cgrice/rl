@@ -1,19 +1,22 @@
 import tdl
 from entities import Entity
-from gamemap import GameMap
+from gamemap import GameMap, Dungeon
 
-SCREEN_WIDTH = 80
-SCREEN_HEIGHT = 50
+SCREEN_WIDTH = 100
+SCREEN_HEIGHT = 100
 LIMIT_FPS = 20
 
 def renderMap(console):
     for y in range(gamemap.height):
         for x in range(gamemap.width):
-            wall = gamemap[x][y].block_sight
+            wall = gamemap[x][y].blocks_sight
             if wall:
-                console.draw_char(x, y, None, fg=None, bg=(0, 0, 100))
+                console.draw_char(x, y, None, fg=None, bg=(10, 10, 10))
             else:
-                console.draw_char(x, y, None, fg=None, bg=(50, 50, 150))
+                if gamemap[x][y].color:
+                    console.draw_char(x, y, None, fg=None, bg=gamemap[x][y].color)
+                else:
+                    console.draw_char(x, y, None, fg=None, bg=(50, 50, 150))
 
 def renderEntites(console):
     for entity in entities:
@@ -52,15 +55,13 @@ def handleInput():
     
 tdl.set_font('dundalk12x12_gs_tc.png', greyscale=True, altLayout=True)
 console = tdl.init(SCREEN_WIDTH, SCREEN_HEIGHT, title="Roguelike", fullscreen=False)
-gamemap = GameMap(80, 45)
-gamemap[30][22].block_sight = True
-gamemap[30][23].block_sight = True
-gamemap[30][24].block_sight = True
-gamemap[30][22].blocked = True
-gamemap[30][23].blocked = True
-gamemap[30][24].blocked = True
+gamemap = GameMap(81, 51)
+dungeon = Dungeon(gamemap)
+dungeon.generate()
 entities = []
-player = Entity(SCREEN_WIDTH//2, SCREEN_HEIGHT//2, '@', (255,255,255))
+
+startx, starty = dungeon.startPosition()
+player = Entity(startx, starty, '@', (255,255,255))
 npc = Entity(10, 10, 'N', (255,0,0))
 entities.append(player)
 entities.append(npc)
