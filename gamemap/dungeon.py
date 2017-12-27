@@ -1,5 +1,6 @@
 from random import randint, choice
 import sys
+import math
 
 from .rect import Rect
 
@@ -7,10 +8,10 @@ class Dungeon:
 
     
 
-    def __init__(self, gamemap):
+    def __init__(self, gamemap, twistiness = 50, density = 10, connectivity = 5):
         self.rooms = []
         self.map = gamemap
-        self.regions = [[-1 for x in range(gamemap.width)] for y in range(gamemap.height)] 
+        self.regions = [[-1 for y in range(gamemap.height)] for x in range(gamemap.width)] 
         self.currentRegion = -1
         self.directions = [
             (1, 0),
@@ -18,14 +19,17 @@ class Dungeon:
             (0, 1),
             (0, -1)
         ]
-        self.color = (100, 100, 250)
+        self.color = (50, 50, 150)
+        self.twistiness = twistiness
+        self.density = density
+        self.connectivity = 100 - connectivity
 
     def generate(self):
         self._fillMap()
-        self._addRooms(1000)
+        self._addRooms(self.density)
         self._addMaze()
-
-        # self._removeDeadEnds()
+        self._connectRegions()
+        self._removeDeadEnds()
 
     def overlaps(self, room):
         overlaps = False
@@ -99,7 +103,7 @@ class Dungeon:
                     unmadeCells.append((dx, dy))
 
             if len(unmadeCells) > 0:
-                if lastdir in unmadeCells and randint(1, 100) < 0:
+                if lastdir in unmadeCells and randint(0, 100) > self.twistiness:
                     direction = lastdir
                 else:
                     direction = choice(unmadeCells)
@@ -134,6 +138,8 @@ class Dungeon:
         self.map[x][y].blocks_sight = False
         self.map[x][y].blocked = False
         self.map[x][y].color = self.color
+        self.map[x][y].region = self.currentRegion
+        self.regions[x][y] = self.currentRegion
 
     def _canCarve(self, x, y, dx, dy):
         pos1 = (x + dx, y + dy)
@@ -153,9 +159,87 @@ class Dungeon:
         room = self._randomRoom()
         return room.center()
 
+    def _connectRegions(self):
+        connectorRegions = {}
+
+        for x in range(0, self.map.width + 1):
+            for y in range(0, self.map.height + 1):
+                # If it's already carved, ignore it
+                if self.map.is_blocked(x, y) == False:
+                    continue
+
+                # Check for regions in all directions
+                regions = set()
+                for direction in self.directions:
+                    dx, dy = direction
+                    try:
+                        region = self.regions[x+dx][y+dy]
+                        if region != -1:
+                            regions.add(region)
+                    except:
+                        continue
+
+                # If this position doesn't connect at least 2 regions, it's not
+                # a potential connector, so discard it
+                if len(regions) < 2: continue
+
+                connectorRegions[(x, y)] = regions
+
+        connectors = list(connectorRegions.keys())
+
+        # Create a dict to track which regions have been merged
+        merged = {}
+        openRegions = set()
+        for i in range(0, self.currentRegion + 1):
+            
+            merged[i] = i
+            openRegions.add(i)
+
+        
+
+        while len(openRegions) >= 1:
+            connector = choice(connectors)
+
+            self._carve(*connector)
+
+            regions = list(map(
+                lambda region: merged[region], 
+                connectorRegions[connector]
+            ))
+            dest = regions[0]
+            sources = regions[1:]
+
+            for i in range(0, self.currentRegion + 1):
+                if merged[i] in sources:
+                    merged[i] = dest
+
+            for source in sources:
+                try:
+                    openRegions.remove(source)
+                except:
+                    pass
+
+            for pos in connectors:
+                if self._distance(connector, pos) < 2:
+                    connectors.remove(pos)
+                    continue
+
+                regions = set(list(map(
+                    lambda region: merged[region],
+                    connectorRegions[pos] 
+                )))
+
+                if len(regions) > 1:
+                    continue
+
+                if randint(0, 100) > self.connectivity:
+                    self._carve(*pos)
+                
+                connectors.remove(pos)
+
+
     def _startRegion(self):
         self.currentRegion += 1
-        self.color = (randint(0, 255), randint(0, 255), randint(0, 255))
 
     def _removeDeadEnds(self):
         done = False
@@ -179,3 +263,6 @@ class Dungeon:
                         done = False
                         self.map[x][y].blocked = True
                         self.map[x][y].blocks_sight = True
+
+    def _distance(self, p0, p1):
+        return math.sqrt((p0[0] - p1[0])**2 + (p0[1] - p1[1])**2)

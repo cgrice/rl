@@ -1,9 +1,11 @@
 import tdl
+from random import randint
+
 from entities import Entity
 from gamemap import GameMap, Dungeon
 
-SCREEN_WIDTH = 100
-SCREEN_HEIGHT = 100
+SCREEN_WIDTH = 81
+SCREEN_HEIGHT = 51
 LIMIT_FPS = 20
 
 def renderMap(console):
@@ -13,10 +15,7 @@ def renderMap(console):
             if wall:
                 console.draw_char(x, y, None, fg=None, bg=(10, 10, 10))
             else:
-                if gamemap[x][y].color:
-                    console.draw_char(x, y, None, fg=None, bg=gamemap[x][y].color)
-                else:
-                    console.draw_char(x, y, None, fg=None, bg=(50, 50, 150))
+                console.draw_char(x, y, None, fg=None, bg=(50, 50, 150))
 
 def renderEntites(console):
     for entity in entities:
@@ -56,7 +55,7 @@ def handleInput():
 tdl.set_font('dundalk12x12_gs_tc.png', greyscale=True, altLayout=True)
 console = tdl.init(SCREEN_WIDTH, SCREEN_HEIGHT, title="Roguelike", fullscreen=False)
 gamemap = GameMap(81, 51)
-dungeon = Dungeon(gamemap)
+dungeon = Dungeon(gamemap, density = 10000, twistiness = 50, connectivity = 10)
 dungeon.generate()
 entities = []
 
