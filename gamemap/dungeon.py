@@ -8,7 +8,10 @@ class Dungeon:
 
     
 
-    def __init__(self, gamemap, twistiness = 50, density = 10, connectivity = 5):
+    def __init__(self, gamemap, 
+        twistiness = 50, density = 10, connectivity = 5,
+        minRoomSize = 1, maxRoomSize = 3
+    ):
         self.rooms = []
         self.map = gamemap
         self.regions = [[-1 for y in range(gamemap.height)] for x in range(gamemap.width)] 
@@ -23,6 +26,8 @@ class Dungeon:
         self.twistiness = twistiness
         self.density = density
         self.connectivity = 100 - connectivity
+        self.minRoomSize = minRoomSize
+        self.maxRoomSize = maxRoomSize
 
     def generate(self):
         self._fillMap()
@@ -60,7 +65,7 @@ class Dungeon:
             self._carveRoom(room)
 
     def _generateRoom(self):
-        size = randint(1, 3) * 2 + 1
+        size = randint(self.minRoomSize, self.maxRoomSize) * 2 + 1
         rectangularity = randint(0, 1 + size // 2) * 2
         w = size
         h = size

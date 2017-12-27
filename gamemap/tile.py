@@ -6,3 +6,5 @@ class Tile:
             block_sight = blocked
         self.block_sight = block_sight
         self.color = None
+        self.visible = False
+        self.explored = False
