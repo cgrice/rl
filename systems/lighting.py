@@ -59,35 +59,44 @@ class LightingSystem(object):
                 appearance = entity.getComponent('appearance')
                 x, y = position.x, position.y
                 visible = (x, y) in visible_tiles
+
                 physical.visible = visible
                 appearance.lighting = 1
+                appearance.tint = False
 
                 if visible:
-                    appearance.lighting = light.strength
+                    distance = self._distance(source_position.x, source_position.y, x, y)
+                    appearance.lighting = self.calculateStrength(light.radius, distance, light.strength)
+                    appearance.tint = light.tint
 
-                entity.addComponent('appearance', appearance) 
+                if visible or gamemap.noFOW:
+                    physical.explored = True
+
+                entity.addComponent('appearance', appearance)
                 entity.addComponent('physical', physical)
 
-            for y in range(gamemap.height):
-                for x in range(gamemap.width):
-                    visible = (x, y) in visible_tiles
+            # for y in range(gamemap.height):
+            #     for x in range(gamemap.width):
+            #         visible = (x, y) in visible_tiles
                 
-                    physical = gamemap.tiles[x][y].getComponent('physical')
-                    appearance = gamemap.tiles[x][y].getComponent('appearance')
-                    position = gamemap.tiles[x][y].getComponent('position')
+            #         physical = gamemap.tiles[x][y].getComponent('physical')
+            #         appearance = gamemap.tiles[x][y].getComponent('appearance')
+            #         position = gamemap.tiles[x][y].getComponent('position')
 
-                    if position.stage != gamemap.stageIndex:
-                        continue
+            #         if position.stage != gamemap.stageIndex:
+            #             continue
 
-                    appearance.lighting = 1
-                    appearance.tint = False
-                    physical.visible = visible
+            #         appearance.lighting = 1
+            #         appearance.tint = False
+            #         physical.visible = visible
 
-                    if visible:
-                        distance = self._distance(source_position.x, source_position.y, x, y)
-                        appearance.lighting = self.calculateStrength(light.radius, distance, light.strength)
-                        appearance.tint = light.tint
-                        physical.explored = True
+            #         if visible:
+            #             distance = self._distance(source_position.x, source_position.y, x, y)
+            #             appearance.lighting = self.calculateStrength(light.radius, distance, light.strength)
+            #             appearance.tint = light.tint
 
-                    gamemap.tiles[x][y].addComponent('physical', physical)
-                    gamemap.tiles[x][y].addComponent('appearance', appearance)
+            #         if visible or gamemap.noFOW:
+            #             physical.explored = True
+
+            #         gamemap.tiles[x][y].addComponent('physical', physical)
+            #         gamemap.tiles[x][y].addComponent('appearance', appearance)

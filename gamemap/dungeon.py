@@ -42,7 +42,7 @@ class Dungeon:
 
         return overlaps
 
-    def startPosition(self):
+    def randomPosition(self):
         x, y = self._randomPosition()
         while self.map.in_bounds(x, y) == False:
             x, y = self._randomPosition()

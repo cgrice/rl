@@ -35,6 +35,9 @@ class Entity(object):
     def hasComponent(self, name):
         return name in self.components
 
+    def getComponentNames(self):
+        return list(self.components.keys())
+
     def hasComponents(self, *names):
         for name in names:
             if self.hasComponent(name) == False:

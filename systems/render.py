@@ -31,18 +31,15 @@ class RenderSystem(object):
         gamemap = engine.getStage()
         player = self.selectPlayer(engine)
         playerPosition = player.getComponent('position')
-
-        tiles = gamemap.calculateTiles()
         entities = engine.getEntitiesWithComponents('position', 'appearance', 'physical')
-        entities = entities + tiles
         entities = sorted(entities, key=self.getLayer)
         for entity in entities:
-            appearance = entity.getComponent('appearance')
             position = entity.getComponent('position')
-            physical = entity.getComponent('physical')
-
             if position.stage != gamemap.stageIndex:
                 continue
+
+            appearance = entity.getComponent('appearance')
+            physical = entity.getComponent('physical')
 
             if physical.visible or physical.explored:
                 bgcolor = appearance.bgcolor
@@ -63,10 +60,11 @@ class RenderSystem(object):
                 )
             
         tdl.flush()
+        console.clear()
 
-        for entity in entities:
-            position = entity.getComponent('position')
-            console.draw_char(position.x, position.y, ' ', bg=None, fg=None)
+        # for entity in entities:
+        #     position = entity.getComponent('position')
+        #     console.draw_char(position.x, position.y, ' ', bg=None, fg=None)
 
 
 
