@@ -2,56 +2,26 @@ import tdl
 import tcod as libtcodpy
 from random import randint
 
-from entities import Entity
+from ecs import Entity
 from gamemap import GameMap, Dungeon
+from components import Position, Appearance, Player, Physical, LightSource
+from systems import RenderSystem, MovementSystem, LightingSystem
 
 SCREEN_WIDTH = 81
 SCREEN_HEIGHT = 51
 LIMIT_FPS = 20
 
-def renderEntites(console):
-    for entity in entities:
-        entity.draw(console)
-    tdl.flush()
-    for entity in entities:
-        entity.clear(console)
-
-def handleInput():
-    global show_map
-
-    dx = 0
-    dy = 0
-
+def getInput():
     user_input = tdl.event.key_wait()
-
-    if user_input.key == 'TEXT' and user_input.text == '§':
-        show_map ^= True
-
-    if user_input.key == 'UP':
-        dy -= 1 
-        fov_recompute = True
-    elif user_input.key == 'DOWN':
-        dy += 1
-        fov_recompute = True
-    elif user_input.key == 'LEFT':
-        dx -= 1
-        fov_recompute = True
-    elif user_input.key == 'RIGHT':
-        dx += 1
-        fov_recompute = True
 
     if user_input.key == 'ENTER' and user_input.alt:
         #Alt+Enter: toggle fullscreen
         tdl.set_fullscreen(not tdl.get_fullscreen())
     elif user_input.key == 'ESCAPE':
-        return True  #exit game
+        return False  #exit game
 
-    playerx = player.x + dx
-    playery = player.y + dy
-    if gamemap.is_blocked(playerx, playery) == False:
-        player.move(dx, dy)
+    return user_input
 
-    return False
     
 tdl.set_font('dundalk12x12_gs_tc.png', greyscale=True, altLayout=True)
 console = tdl.init(SCREEN_WIDTH, SCREEN_HEIGHT, title="Roguelike", fullscreen=False)
@@ -60,33 +30,50 @@ dungeon = Dungeon(gamemap,
     density = 10000, twistiness = 80, connectivity = 8, 
     minRoomSize = 2, maxRoomSize = 5
 )
-dungeon.generate()
-entities = []
 
+
+tiles = dungeon.generate()
 startx, starty = dungeon.startPosition()
-player = Entity(startx, starty, '@', (255,255,255))
-npc = Entity(10, 10, 'N', (255,0,0))
+player = Entity()
+player.addComponent('position', Position(x=startx, y=starty))
+player.addComponent('appearance', Appearance('player', fgcolor=(255,255,255), character='@', layer=1))
+player.addComponent('physical', Physical(visible=True, blocked = True))
+player.addComponent('player', Player())
+player.addComponent('controllable', {})
+player.addComponent('moveable', {})
+player.addComponent('light_source', LightSource(radius=8, tint=(15, 20, 5), strength=2.5))
+goblin = Entity()
+goblin.addComponent('position', Position(x=10, y=10))
+goblin.addComponent('appearance', Appearance('player', fgcolor=(0,255,0), character='G', layer=1))
+goblin.addComponent('physical', Physical(visible=False, blocked = True))
+goblin.addComponent('moveable', {})
+entities = []
 entities.append(player)
-entities.append(npc)
+entities.append(goblin)
 
 show_map = False
-gamemap.computeFOV(player.x, player.y)
-gamemap.render(console, noFOW=show_map)
-renderEntites(console)
+render = RenderSystem()
+move = MovementSystem()
+light = LightingSystem()
+light(entities, gamemap)
+render(entities, gamemap, console, recompute_fov = True)
+
 
 while not tdl.event.is_window_closed():
-    exit_game = handleInput()
+    keys = getInput()
+    exit_game = not keys
 
-    fov_recompute = True
-    if fov_recompute:
-        gamemap.computeFOV(player.x, player.y)
-        fov_recompute = False
-
-    print(show_map)
-    gamemap.render(console, noFOW=show_map)
-    renderEntites(console)
     if exit_game:
         break
+
+    if keys.key == 'TEXT' and keys.text == '§':
+        gamemap.noFOW = not gamemap.noFOW
+
+
+    recompute_fov = move(keys, entities, gamemap, console)
+    if recompute_fov:
+        light(entities, gamemap)
+    render(entities, gamemap, console, recompute_fov=recompute_fov)
 
 
 

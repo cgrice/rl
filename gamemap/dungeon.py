@@ -6,8 +6,6 @@ from .rect import Rect
 
 class Dungeon:
 
-    
-
     def __init__(self, gamemap, 
         twistiness = 50, density = 10, connectivity = 5,
         minRoomSize = 1, maxRoomSize = 3
@@ -136,14 +134,11 @@ class Dungeon:
     def _fillMap(self):
         for x, row in enumerate(self.map.tiles):
             for y, tile in enumerate(row):
-                self.map[x][y].blocks_sight = True
-                self.map[x][y].blocked = True
+                self.map[x][y] = self.map.createWall(x, y)
 
     def _carve(self, x, y):
-        self.map[x][y].blocks_sight = False
-        self.map[x][y].blocked = False
-        self.map[x][y].color = self.color
-        self.map[x][y].region = self.currentRegion
+        floor = self.map.createFloor(x, y)
+        self.map[x][y] = floor
         self.regions[x][y] = self.currentRegion
 
     def _canCarve(self, x, y, dx, dy):
@@ -205,7 +200,7 @@ class Dungeon:
         while len(openRegions) >= 1:
             connector = choice(connectors)
 
-            self._carve(*connector)
+            self._carveConnector(*connector)
 
             regions = list(map(
                 lambda region: merged[region], 
@@ -238,10 +233,17 @@ class Dungeon:
                     continue
 
                 if randint(0, 100) > self.connectivity:
-                    self._carve(*pos)
+                    self._carveConnector(*pos)
                 
                 connectors.remove(pos)
 
+    def _carveConnector(self, x, y):
+        if randint(0, 100) > 500:
+            connector = self.map.createDoor(x, y)
+        else:
+            connector = self.map.createFloor(x, y)
+        self.map[x][y] = connector
+        self.regions[x][y] = self.currentRegion
 
     def _startRegion(self):
         self.currentRegion += 1
@@ -266,8 +268,8 @@ class Dungeon:
 
                     if exits <= 1: 
                         done = False
-                        self.map[x][y].blocked = True
-                        self.map[x][y].blocks_sight = True
+                        wall = self.map.createWall(x, y)
+                        self.map[x][y] = wall
 
     def _distance(self, p0, p1):
         return math.sqrt((p0[0] - p1[0])**2 + (p0[1] - p1[1])**2)

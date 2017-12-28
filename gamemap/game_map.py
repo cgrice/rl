@@ -1,4 +1,6 @@
 import tdl
+from ecs import Entity
+from components import Physical, Appearance, Position
 
 from .tile import Tile
 
@@ -6,10 +8,12 @@ FOV_ALGO = 'SHADOW'  #default FOV algorithm
 FOV_LIGHT_WALLS = True
 TORCH_RADIUS = 10
 
-color_dark_wall = (50, 50, 150)
-color_dark_ground = (40, 40, 80)
-color_light_wall = (250, 230, 180)
-color_light_ground = (140, 148, 108)
+color_dark_wall = (75, 75, 75)
+color_dark_ground = (25, 25, 25)
+color_dark_door = (130, 85, 50)
+color_light_door = (130, 85, 50)
+color_light_wall = (200, 200, 200)
+color_light_ground = (148, 148, 148)
 
 class GameMap:
 
@@ -21,14 +25,16 @@ class GameMap:
         for y in range(self.height) ]
             for x in range(self.width) ]
         self.visible_tiles = []
+        self.noFOW = False
 
     def in_bounds(self, x, y):
         return (x < self.width and x > 0 and y < self.height and y > 0)
 
     def is_blocked(self, x, y):
         try:
-            blocked = self.tiles[x][y].blocked
-            blocks_sight = self.tiles[x][y].blocks_sight
+            physical = self.tiles[x][y].getComponent('physical')
+            blocked = physical.blocked
+            blocks_sight = physical.blocks_sight
             return blocked and blocks_sight
         except:
             return True
@@ -43,26 +49,34 @@ class GameMap:
         else:
             return True
 
-    def render(self, console, noFOW = False):
+    def createWall(self, x, y):
+        wall = Entity()
+        wall.addComponent('position', Position(x=x, y=y))
+        wall.addComponent('appearance', Appearance('wall', bgcolor=color_dark_wall, layer=0))
+        wall.addComponent('physical', Physical(blocks_sight = True, blocked = True))
+        return wall
+
+    def createFloor(self, x, y):
+        floor = Entity()
+        floor.addComponent('position', Position(x=x, y=y))
+        floor.addComponent('appearance', Appearance('floor', bgcolor=color_dark_ground, layer=0))
+        floor.addComponent('physical', Physical(blocks_sight = False, blocked = False))
+        return floor
+
+    def createDoor(self, x, y):
+        door = Entity()
+        door.addComponent('position', Position(x=x, y=y))
+        door.addComponent('appearance', Appearance('door', bgcolor=color_dark_door, layer=0))
+        door.addComponent('physical', Physical(blocks_sight = True, blocked = True))
+        return door
+
+    def calculateTiles(self):
+        tiles = []
         for y in range(self.height):
             for x in range(self.width):
-                console.draw_char(x, y, ' ', bg=(0, 0, 0))
-                visible = (x, y) in self.visible_tiles
-                wall = self.tiles[x][y].blocks_sight
-                if not visible:
-                    explored = self.tiles[x][y].explored
-                    if explored or noFOW:
-                        if wall:
-                            console.draw_char(x, y, None, fg=None, bg=color_dark_wall)
-                        else:
-                            console.draw_char(x, y, None, fg=None, bg=color_dark_ground)
-                    continue
-                else:
-                    if wall:
-                        console.draw_char(x, y, None, fg=None, bg=color_light_wall)
-                    else:
-                        console.draw_char(x, y, None, fg=None, bg=color_light_ground)
-                    self.tiles[x][y].explored = True
+                tiles.append(self.tiles[x][y])
+                
+        return tiles
 
     def computeFOV(self, playerX, playerY):
         self.visible_tiles = tdl.map.quickFOV(
