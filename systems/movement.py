@@ -1,12 +1,18 @@
 class MovementSystem(object):
 
-    def __call__(self, keys, engine, gamemap, console):
+    def __call__(self, keys, engine, console):
+        gamemap = engine.getStage()
+
         fov_recompute = False
         toMove = engine.getEntitiesWithComponents('position', 'moveable', 'controllable')
         
         for entity in toMove:
-            dx, dy = (0, 0)
             position = entity.getComponent('position')
+
+            if position.stage != gamemap.stageIndex:
+                continue
+            
+            dx, dy = (0, 0)
 
             if keys.key == 'UP':
                 dy -= 1 

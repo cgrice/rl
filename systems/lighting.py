@@ -28,14 +28,22 @@ class LightingSystem(object):
         ratio = distance / radius
         return maxStrength - strengthRange * ratio
 
-    def __call__(self, engine, gamemap):
+    def __call__(self, engine):
+
+        gamemap = engine.getStage()
         
         all_visible = set()
 
         light_sources = engine.getEntitiesWithComponents('light_source', 'position')
         
         for source in light_sources:
+            source_position = source.getComponent('position')
+
+            if source_position.stage != gamemap.stageIndex:
+                continue
+            
             light = source.getComponent('light_source')
+            
             visible_tiles = self.calculateVisible(source, gamemap)
             all_visible = all_visible.union(visible_tiles)
 
@@ -43,6 +51,10 @@ class LightingSystem(object):
                 'position', 'physical', 'appearance'
             ):
                 position = entity.getComponent('position')
+
+                if position.stage != gamemap.stageIndex:
+                    continue
+
                 physical = entity.getComponent('physical')
                 appearance = entity.getComponent('appearance')
                 x, y = position.x, position.y
@@ -62,12 +74,16 @@ class LightingSystem(object):
                 
                     physical = gamemap.tiles[x][y].getComponent('physical')
                     appearance = gamemap.tiles[x][y].getComponent('appearance')
+                    position = gamemap.tiles[x][y].getComponent('position')
+
+                    if position.stage != gamemap.stageIndex:
+                        continue
+
                     appearance.lighting = 1
                     appearance.tint = False
                     physical.visible = visible
 
                     if visible:
-                        source_position = source.getComponent('position')
                         distance = self._distance(source_position.x, source_position.y, x, y)
                         appearance.lighting = self.calculateStrength(light.radius, distance, light.strength)
                         appearance.tint = light.tint

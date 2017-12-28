@@ -22,7 +22,21 @@ class Engine(object):
     def __init__(self):
         self.entities = {}
         self.componentMap = {}
+        self.stages = {}
+        self.stageIndex = -1
 
+    def addStage(self, index, gamemap):
+        gamemap.stageIndex = index
+        self.stages[index] = gamemap
+
+    def hasStage(self, index):
+        return index in self.stages
+
+    def setStage(self, index):
+        self.stageIndex = index
+        
+    def getStage(self):
+        return self.stages[self.stageIndex]
 
     def addEntity(self, entity):
         self.entities[entity.uid] = entity

@@ -27,9 +27,8 @@ class RenderSystem(object):
             newColor[i] = newChannel
         return tuple(newColor)
         
-
-    
-    def __call__(self, engine, gamemap, console, recompute_fov = False):
+    def __call__(self, engine, console, recompute_fov = False):
+        gamemap = engine.getStage()
         player = self.selectPlayer(engine)
         playerPosition = player.getComponent('position')
 
@@ -41,6 +40,9 @@ class RenderSystem(object):
             appearance = entity.getComponent('appearance')
             position = entity.getComponent('position')
             physical = entity.getComponent('physical')
+
+            if position.stage != gamemap.stageIndex:
+                continue
 
             if physical.visible or physical.explored:
                 bgcolor = appearance.bgcolor
