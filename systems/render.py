@@ -2,11 +2,8 @@ import tdl
 
 class RenderSystem(object):
     
-    def selectRenderable(self, entities):
-        return [entity for entity in entities if entity.hasComponents('position', 'appearance', 'physical')]
-
-    def selectPlayer(self, entities):
-        return next(entity for entity in entities if entity.hasComponents('player', 'position'))
+    def selectPlayer(self, engine):
+        return engine.getEntitiesWithComponents('position', 'player')[0]
 
     def getLayer(self, entity):
         appearance = entity.getComponent('appearance')
@@ -32,13 +29,13 @@ class RenderSystem(object):
         
 
     
-    def __call__(self, entities, gamemap, console, recompute_fov = False):
-        player = self.selectPlayer(entities)
+    def __call__(self, engine, gamemap, console, recompute_fov = False):
+        player = self.selectPlayer(engine)
         playerPosition = player.getComponent('position')
 
         tiles = gamemap.calculateTiles()
+        entities = engine.getEntitiesWithComponents('position', 'appearance', 'physical')
         entities = entities + tiles
-        entities = self.selectRenderable(entities)
         entities = sorted(entities, key=self.getLayer)
         for entity in entities:
             appearance = entity.getComponent('appearance')

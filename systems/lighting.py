@@ -28,32 +28,33 @@ class LightingSystem(object):
         ratio = distance / radius
         return maxStrength - strengthRange * ratio
 
-    def __call__(self, entities, gamemap):
+    def __call__(self, engine, gamemap):
         
         all_visible = set()
 
-        light_sources = [entity for entity in entities if entity.hasComponents('light_source', 'position')]
+        light_sources = engine.getEntitiesWithComponents('light_source', 'position')
         
         for source in light_sources:
             light = source.getComponent('light_source')
             visible_tiles = self.calculateVisible(source, gamemap)
             all_visible = all_visible.union(visible_tiles)
 
-            for entity in entities:
-                if entity.hasComponents('position', 'physical', 'appearance'):
-                    position = entity.getComponent('position')
-                    physical = entity.getComponent('physical')
-                    appearance = entity.getComponent('appearance')
-                    x, y = position.x, position.y
-                    visible = (x, y) in visible_tiles
-                    physical.visible = visible
-                    appearance.lighting = 1
+            for entity in engine.getEntitiesWithComponents(
+                'position', 'physical', 'appearance'
+            ):
+                position = entity.getComponent('position')
+                physical = entity.getComponent('physical')
+                appearance = entity.getComponent('appearance')
+                x, y = position.x, position.y
+                visible = (x, y) in visible_tiles
+                physical.visible = visible
+                appearance.lighting = 1
 
-                    if visible:
-                        appearance.lighting = light.strength
+                if visible:
+                    appearance.lighting = light.strength
 
-                    entity.addComponent('appearance', appearance) 
-                    entity.addComponent('physical', physical)
+                entity.addComponent('appearance', appearance) 
+                entity.addComponent('physical', physical)
 
             for y in range(gamemap.height):
                 for x in range(gamemap.width):
@@ -74,5 +75,3 @@ class LightingSystem(object):
 
                     gamemap.tiles[x][y].addComponent('physical', physical)
                     gamemap.tiles[x][y].addComponent('appearance', appearance)
-
-        return True

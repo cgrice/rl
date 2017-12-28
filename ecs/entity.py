@@ -26,7 +26,7 @@ class Entity(object):
     '''
 
     def __init__(self, uid = None):
-        self.uid = uuid.uuid4 if uid is None else uid
+        self.uid = str(uuid.uuid4()) if uid is None else uid
         self.components = {}
 
     def addComponent(self, name, component):

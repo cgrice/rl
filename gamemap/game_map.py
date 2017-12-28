@@ -8,8 +8,8 @@ FOV_ALGO = 'SHADOW'  #default FOV algorithm
 FOV_LIGHT_WALLS = True
 TORCH_RADIUS = 10
 
-color_dark_wall = (75, 75, 75)
-color_dark_ground = (25, 25, 25)
+color_dark_wall = (75, 75, 90)
+color_dark_ground = (30, 30, 40)
 color_dark_door = (130, 85, 50)
 color_light_door = (130, 85, 50)
 color_light_wall = (200, 200, 200)

@@ -1,15 +1,8 @@
 class MovementSystem(object):
 
-    def selectControllable(self, entities):
-        return [
-            entity for entity in entities 
-            if entity.hasComponents('moveable', 'controllable', 'position')
-        ]
-
-
-    def __call__(self, keys, entities, gamemap, console):
+    def __call__(self, keys, engine, gamemap, console):
         fov_recompute = False
-        toMove = self.selectControllable(entities)
+        toMove = engine.getEntitiesWithComponents('position', 'moveable', 'controllable')
         
         for entity in toMove:
             dx, dy = (0, 0)
