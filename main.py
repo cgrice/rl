@@ -42,7 +42,7 @@ engine.addStages(
         width = SCREEN_WIDTH, height = MAP_HEIGHT, stage = 1,
         density = 10000, twistiness = 80, connectivity = 8, 
         minRoomSize = 2, maxRoomSize = 5, 
-        exits = 1, entrances = 0
+        exits = 1, entrances = 1
     ),
     dungeonGenerator.generate(
         width = SCREEN_WIDTH, height = MAP_HEIGHT, stage = 2,
@@ -54,7 +54,7 @@ engine.addStages(
         width = SCREEN_WIDTH, height = MAP_HEIGHT, stage = 3,
         density = 100, twistiness = 20, connectivity = 20, 
         minRoomSize = 2, maxRoomSize = 10,
-        exits = 1, entrances = 1
+        exits = 0, entrances = 1
     )
 )
 engine.setStage(0)
