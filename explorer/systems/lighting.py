@@ -29,6 +29,9 @@ class LightingSystem(object):
         return maxStrength - strengthRange * ratio
 
     def __call__(self, engine, previous = None):
+        if engine.paused:
+            return previous
+        
         gamemap = engine.getStage()
         em = engine.entityManager
         
@@ -51,12 +54,12 @@ class LightingSystem(object):
                 'position', 'physical', 'appearance'
             ):
                 position = entity.getComponent('position')
+                appearance = entity.getComponent('appearance')
 
                 if position.stage != gamemap.stageIndex:
                     continue
 
                 physical = entity.getComponent('physical')
-                appearance = entity.getComponent('appearance')
                 x, y = position.x, position.y
                 visible = (x, y) in visible_tiles
 

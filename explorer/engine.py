@@ -3,7 +3,7 @@ import datetime
 
 from explorer.managers import EntityManager
 from ecs import Entity
-from ecs.components import Position, Player, Physical, Appearance, LightSource
+from ecs.components import Position, Player, Physical, Appearance, LightSource, Inventory
 
 class Engine(object):
     '''A game engine.
@@ -19,6 +19,8 @@ class Engine(object):
         self.keys = None
         self.gui = None
         self.profile = False
+        self.paused = False
+        self.won = False
 
     def run(self):
         # Each system returns an object which is passed along to
@@ -37,8 +39,11 @@ class Engine(object):
                 diff = end - start
                 print("%s time: %s" % (system.__class__, diff.microseconds))
 
+        if self.won:
+            return False
+        
         if self.gui:
-            self.gui.render(self)
+            self.gui.render()
 
         tdl.flush()
         self.console.clear()
@@ -53,7 +58,9 @@ class Engine(object):
         if self.keys.key == 'TEXT' and self.keys.text == '§':
             self.getStage().noFOW = not self.getStage().noFOW
 
-        
+        if self.keys.key == 'TEXT' and self.keys.text == 'i':
+            self.paused = not self.paused
+            self.gui.showInventory = self.paused
 
         return True
 
@@ -70,6 +77,7 @@ class Engine(object):
         player.addComponent('controllable', {})
         player.addComponent('moveable', {})
         player.addComponent('light_source', LightSource(radius=8, tint=(0, 0, 0), strength=3))
+        player.addComponent('inventory', Inventory())
         self.entityManager.addEntity(player)
 
 
