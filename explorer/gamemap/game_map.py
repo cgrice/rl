@@ -1,3 +1,5 @@
+from random import randint
+
 from ecs import Entity
 from ecs.components import Physical, Appearance, Position
 from explorer.gamemap.tile import Tile
@@ -6,18 +8,14 @@ FOV_ALGO = 'SHADOW'  #default FOV algorithm
 FOV_LIGHT_WALLS = True
 TORCH_RADIUS = 10
 
-color_dark_wall = (75, 75, 90)
-color_dark_ground = (30, 30, 40)
-color_dark_door = (130, 85, 50)
-color_light_door = (130, 85, 50)
-color_light_wall = (200, 200, 200)
-color_light_ground = (148, 148, 148)
-
 class GameMap:
 
     def __init__(self, width, height, stageIndex = -1):
         self.width = width
         self.height = height
+
+        self.ground_color = (48, 43, 26)
+        self.wall_color =  (85, 85, 85)
 
         self.tiles = [[ Tile(False)
         for y in range(self.height) ]
@@ -53,25 +51,40 @@ class GameMap:
             return True
 
     def createWall(self, x, y):
+        color = self.wall_color
+        modifier = randint(-10, 10)
+        color = (
+            color[0] + modifier,
+            color[1] + modifier,
+            color[2] + modifier,
+        )
+        
         wall = Entity()
         wall.addComponent('position', Position(x=x, y=y, stage=self.stageIndex))
-        wall.addComponent('appearance', Appearance('wall', bgcolor=color_dark_wall, layer=0))
+        wall.addComponent('appearance', Appearance('wall', bgcolor=color, layer=0))
         wall.addComponent('physical', Physical(blocks_sight = True, blocked = True))
         return wall
 
     def createFloor(self, x, y):
+        color = self.ground_color
+        modifier = randint(0, 6)
+        color = (
+            color[0] + modifier,
+            color[1] + modifier,
+            color[2] + modifier
+        )
         floor = Entity()
         floor.addComponent('position', Position(x=x, y=y, stage=self.stageIndex))
-        floor.addComponent('appearance', Appearance('floor', bgcolor=color_dark_ground, layer=0))
+        floor.addComponent('appearance', Appearance('floor', bgcolor=color, layer=0))
         floor.addComponent('physical', Physical(blocks_sight = False, blocked = False))
         return floor
 
-    def createDoor(self, x, y):
-        door = Entity()
-        door.addComponent('position', Position(x=x, y=y, stage=self.stageIndex))
-        door.addComponent('appearance', Appearance('door', bgcolor=color_dark_door, layer=0))
-        door.addComponent('physical', Physical(blocks_sight = True, blocked = True))
-        return door
+    # def createDoor(self, x, y):
+    #     door = Entity()
+    #     door.addComponent('position', Position(x=x, y=y, stage=self.stageIndex))
+    #     door.addComponent('appearance', Appearance('door', bgcolor=color_dark_door, layer=0))
+    #     door.addComponent('physical', Physical(blocks_sight = True, blocked = True))
+    #     return door
 
     def getEntities(self):
         tiles = []

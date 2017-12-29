@@ -13,9 +13,11 @@ class Engine(object):
         self.console = console
         self.systems = []
         self.stages = []
+        self.messages = []
         self.entityManager = EntityManager()
         self.stageIndex = -1
         self.keys = None
+        self.gui = None
         self.profile = False
 
     def run(self):
@@ -35,6 +37,12 @@ class Engine(object):
                 diff = end - start
                 print("%s time: %s" % (system.__class__, diff.microseconds))
 
+        if self.gui:
+            self.gui.render(self)
+
+        tdl.flush()
+        self.console.clear()
+        
         # Set the input on the engine so that systems can use it
         self.keys = self.getInput()
         exit_game = not self.keys
@@ -45,18 +53,23 @@ class Engine(object):
         if self.keys.key == 'TEXT' and self.keys.text == '§':
             self.getStage().noFOW = not self.getStage().noFOW
 
+        
+
         return True
 
-    def addPlayer(self, character, color):
+    def addMessage(self, content, color):
+        self.messages.append((content, color))
+
+    def addPlayer(self, name, character, color):
         startx, starty = self.getStage().start
         player = Entity()
         player.addComponent('position', Position(x=startx, y=starty, stage=0))
-        player.addComponent('appearance', Appearance('player', fgcolor=(255,255,255), character='@', layer=1))
+        player.addComponent('appearance', Appearance(name, fgcolor=(255,255,255), character='@', layer=1))
         player.addComponent('physical', Physical(visible=True, blocked = True))
         player.addComponent('player', Player())
         player.addComponent('controllable', {})
         player.addComponent('moveable', {})
-        player.addComponent('light_source', LightSource(radius=8, tint=(20, 20, 5), strength=2.5))
+        player.addComponent('light_source', LightSource(radius=8, tint=(0, 0, 0), strength=3))
         self.entityManager.addEntity(player)
 
 
