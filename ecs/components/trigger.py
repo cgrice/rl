@@ -1,13 +1,14 @@
 class Trigger(object):
 
-    def __init__(self, condition = None, action = None):
-        self.condition = condition
-        self.action = action
+    def __init__(self, conditions = [], actions = []):
+        self.conditions = conditions
+        self.actions = actions
 
     def run(self, source, target, **kwargs):
-        if self.action != None:
-            if self.condition != None:
-                if self.condition(source, target):
-                    self.action(source, target, **kwargs)
-            else:
-                self.action(source, target, **kwargs)
+        if len(self.conditions) > 0:
+            for condition in self.conditions:
+                if condition(source, target) == False:
+                    return False
+                
+        for action in self.actions:
+            action(source, target, **kwargs)

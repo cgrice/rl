@@ -52,6 +52,7 @@ class EntityManager(object):
             uids = self.componentMap[hashkey]
         except:
             raise KeyError('There are no entities with the components: {0}'.format(components))
+            
         return [self.getEntity(uid) for uid in uids]
 
     def _powerset(self, components):

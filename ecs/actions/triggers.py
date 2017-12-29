@@ -27,3 +27,32 @@ class MoveStage(object):
             '%s is now in floor %s' % (appearance.name, nextIndex), 
             (255,200,200)
         )
+
+class LogMessage(object):
+
+    def __init__(self, engine, message = ''):
+        self.message = message
+        self.engine = engine
+
+    def __call__(self, source, target):
+        appearance = target.getComponent('appearance')
+        message = '%s %s' % (appearance.name, self.message)
+        self.engine.addMessage(message, (255, 200, 200))
+
+class AddToInventory(object):
+
+    def __init__(self, engine):
+        self.engine = engine
+
+    def __call__(self, source, target):
+        inventory = target.getComponent('inventory')
+
+        if inventory:
+            inventory.addItem(source.uid)
+        
+        em = self.engine.entityManager
+        em.removeEntity(source)
+        source.removeComponent('physical')
+        source.removeComponent('position')
+        source.removeComponent('trigger')
+        em.addEntity(source)

@@ -2,9 +2,10 @@ from random import choice
 
 from explorer.gamemap import GameMap, Dungeon
 from ecs import Entity
-from ecs.components import Position, Appearance, Physical, Trigger
-from ecs.actions.triggers import MoveStage
-from ecs.conditions.player import SteppedOn
+from ecs.components import Position, Appearance, Physical, Trigger, LightSource
+from ecs.actions.triggers import MoveStage, LogMessage, AddToInventory
+from ecs.conditions.location import SteppedOn
+from ecs.conditions.components import HasComponents
 
 DUNGEON_THEMES = [
     ((48, 43, 26), (100, 100, 100)),
@@ -13,6 +14,12 @@ DUNGEON_THEMES = [
     ((10, 10, 10), (50, 50, 50)),
     ((40, 40, 60), (100, 100, 140)),
 ]
+
+GEM_COLORS = {
+    'red': (255, 0, 0),
+    'green': (0, 255, 0),
+    'blue': (0, 0, 255),
+}
 
 class DungeonGenerator(object):
     '''A generator which creates a standard RPG dungeon
@@ -27,7 +34,7 @@ class DungeonGenerator(object):
 
     def generate(self, 
         width = 81,
-        height = 51,
+        height = 41,
         stage = -1,
         density = 100, 
         twistiness = 10, 
@@ -35,14 +42,18 @@ class DungeonGenerator(object):
         minRoomSize = 2, 
         maxRoomSize = 5,
         exits = 1,
-        entrances = 1
+        entrances = 1,
+        theme = None
     ):
         self.stage = stage
         # Create a new map with the specific width, and a dungeon to fill it.
         # We can then generate some entities for walls and floors based on
         # the configuration of the dungeon
         gamemap = GameMap(width = width, height = height, stageIndex = stage)
-        gamemap.ground_color, gamemap.wall_color = choice(DUNGEON_THEMES)
+        if theme != None:
+            gamemap.ground_color, gamemap.wall_color = DUNGEON_THEMES[theme]
+        else:
+            gamemap.ground_color, gamemap.wall_color = choice(DUNGEON_THEMES)
         dungeon = Dungeon(gamemap, 
             density = density, 
             twistiness = twistiness, 
@@ -64,31 +75,62 @@ class DungeonGenerator(object):
         # @TODO: Add multiple exits/entrances
         self._addTransports(gamemap, dungeon, exits = exits, entrances = entrances)
 
+        self._populate(gamemap, dungeon)
+
         return gamemap
+
+    def _populate(self, gamemap, dungeon):
+        gem = Entity()
+        gemx, gemy = dungeon.randomPosition()
+        gemColor = choice(list(GEM_COLORS.keys()))
+        gem.addComponent('position', Position(x=gemx, y=gemy, stage=self.stage))
+        gem.addComponent('physical', Physical(blocks_sight = False, blocked = False))
+        gem.addComponent('appearance', Appearance('A shiny %s gem' % gemColor, layer=1, character='*', fgcolor=GEM_COLORS[gemColor]))
+        # gem.addComponent('light_source', LightSource(radius=2, strength=3, tint=(10,0,0)))
+        gemTrigger = Trigger(
+            actions = [
+                LogMessage(self.engine, message = 'picked up a shiny %s gem' % gemColor),
+                AddToInventory(self.engine),
+            ],
+            conditions = [
+                HasComponents('player'),
+                SteppedOn(),
+            ]
+        )
+        gem.addComponent('trigger', gemTrigger)
+        gem.addComponent('essential', {})
+        self.engine.entityManager.addEntity(gem)
+        return True
 
     def _addTransports(self, gamemap, dungeon, exits = 0, entrances = 0):
         for x in range(exits):
             exitx, exity = gamemap.exit
             stairsdown = Entity()
             stairsdown.addComponent('position', Position(x=exitx, y=exity, stage=self.stage))
-            stairsdown.addComponent('appearance', Appearance('stairs', character=25, fgcolor=(255, 255, 255), bgcolor=(10, 0, 00), layer=0))
+            stairsdown.addComponent('appearance', Appearance('stairs', layer=1, character=25, fgcolor=(255, 255, 255), bgcolor=(10, 0, 00)))
             stairsdown.addComponent('physical', Physical(blocks_sight = False, blocked = False))
             stairsTrigger = Trigger(
-                action = MoveStage(self.engine, direction = 1),
-                condition = SteppedOn()
+                actions = [
+                    MoveStage(self.engine, direction = 1)
+                ],
+                conditions = [
+                    HasComponents('player'),
+                    SteppedOn(),
+                ]
             )
             stairsdown.addComponent('trigger', stairsTrigger)
-            gamemap[exitx][exity] = stairsdown
+            self.engine.entityManager.addEntity(stairsdown)
         for x in range(entrances):
             startx, starty = gamemap.start
             stairsup = Entity()
             stairsup.addComponent('position', Position(x=startx, y=starty, stage=self.stage))
-            stairsup.addComponent('appearance', Appearance('stairs', character=24, fgcolor=(255, 255, 255), bgcolor=(10, 0, 00), layer=0))
+            stairsup.addComponent('appearance', Appearance('stairs', layer=1, character=24, fgcolor=(255, 255, 255), bgcolor=(10, 0, 00)))
             stairsup.addComponent('physical', Physical(blocks_sight = False, blocked = False))
             stairsTrigger = Trigger(
-                action = MoveStage(self.engine, direction = -1),
-                condition = SteppedOn()
+                actions = [MoveStage(self.engine, direction = -1)],
+                conditions = [HasComponents('player'),SteppedOn()]
             ) 
             stairsup.addComponent('trigger', stairsTrigger)
-            gamemap[startx][starty] = stairsup
+            self.engine.entityManager.addEntity(stairsup)
+            # gamemap[startx][starty] = stairsup
         

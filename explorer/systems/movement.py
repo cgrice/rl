@@ -1,6 +1,9 @@
 class MovementSystem(object):
 
     def __call__(self, engine, previous = None):
+        if engine.paused:
+            return previous
+
         keys = engine.keys
 
         if keys == None:

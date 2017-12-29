@@ -5,42 +5,75 @@ PANEL_HEIGHT = 20
 MSG_WIDTH = 40
 STATS_WIDTH = 40
 BORDER_SIZE = 1
+INVENTORY_WIDTH = 41
+INVENTORY_HEIGHT = 41
 
 class Interface(object):
 
-    def __init__(self, console, width = 0, height = 0, starty = 0):
+    def __init__(self, engine, console, width = 0, height = 0, starty = 0):
         self.root = console
         self.starty = starty
         self.width = width
         self.height = height
         self.messages = []
+        self.engine = engine
         
         self.panel = tdl.Console(self.width, self.height)
+        self.inventory = tdl.Console(INVENTORY_WIDTH, INVENTORY_HEIGHT)
+        self.showInventory = False
 
-    def render(self, engine):
+    def render(self):
         self.panel.clear(bg=(20,20,50))
         self.panel.draw_rect(0, 0, self.width, BORDER_SIZE, 1, bg=(100,100,120))
         self.panel.draw_rect(0, self.height-1, self.width, BORDER_SIZE, 1, bg=(100,100,120))
         self.panel.draw_rect(MSG_WIDTH, 0, BORDER_SIZE, self.height, 1, bg=(100,100,120))
-        self.renderStats(engine)
-        self.renderMessages(engine.messages)
+        self.renderStats()
+        self.renderMessages(self.engine.messages)
         self.root.blit(self.panel, 0, self.starty, self.width, self.height)
+        if self.showInventory:
+            self.renderInventory()
 
-    def renderStats(self, engine):
-        em = engine.entityManager
+    def renderInventory(self):
+        self.inventory.clear()
+        em = self.engine.entityManager
+        player = em.getEntitiesWithComponents('player', 'appearance', 'position', 'inventory')[0]
+        inventory = player.getComponent('inventory')
+
+        startx = 0
+        starty = 0
+        centerx = INVENTORY_WIDTH // 2
+        self.inventory.draw_rect(0, 0, INVENTORY_WIDTH, INVENTORY_HEIGHT, 1, bg=(50,20,50))
+        self.inventory.draw_rect(0, 0, INVENTORY_WIDTH, BORDER_SIZE, 1, bg=(100,100,120))
+        self.inventory.draw_rect(INVENTORY_WIDTH - 1, 0, BORDER_SIZE, INVENTORY_HEIGHT, 1, bg=(100,100,120))
+        self.inventory.draw_str(centerx - 10, 2, 'CHARACTER INVENTORY', bg=None, fg=(255,255,255))
+
+        index = 4
+        for itemid in inventory.items:
+            item = em.getEntity(itemid)
+            appearance = item.getComponent('appearance')
+            self.inventory.draw_str(1, index, appearance.name, fg=(255,255,255), bg=None)
+
+        self.root.blit(self.inventory, startx, starty, INVENTORY_WIDTH, INVENTORY_HEIGHT)
+
+
+    def renderStats(self):
+        em = self.engine.entityManager
         startStats = MSG_WIDTH+BORDER_SIZE
-        player = em.getEntitiesWithComponents('player', 'appearance', 'position')[0]
+        player = em.getEntitiesWithComponents('player', 'appearance', 'position', 'inventory')[0]
         appearance = player.getComponent('appearance')
         position = player.getComponent('position')
+        inventory = player.getComponent('inventory')
         name = "Player: %s" % appearance.name
         health = "HP:     50 / 50"
         position = "Coords: %s,%s" % (position.x, position.y)
-        floor = "Floor:  %s" % engine.stageIndex
+        floor = "Floor:  %s" % self.engine.stageIndex
+        inventory = "%s items in bag" % (len(inventory.items))
 
         self.panel.draw_str(startStats, BORDER_SIZE, name, bg=None, fg=(255,255,255))
         self.panel.draw_str(startStats, BORDER_SIZE + 1, health, bg=None, fg=(255,255,255))
         self.panel.draw_str(startStats, BORDER_SIZE + 3, position, bg=None, fg=(255,255,255))
         self.panel.draw_str(startStats, BORDER_SIZE + 4, floor, bg=None, fg=(255,255,255))
+        self.panel.draw_str(startStats, BORDER_SIZE + 5, inventory, bg=None, fg=(255,255,255))
 
     def renderMessages(self, messages):
         messages = self.bufferMessages(messages[-8:])
