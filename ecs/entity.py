@@ -26,7 +26,7 @@ class Entity(object):
     '''
 
     def __init__(self, uid = None):
-        self.uid = uuid.uuid4 if uid is None else uid
+        self.uid = str(uuid.uuid4()) if uid is None else uid
         self.components = {}
 
     def addComponent(self, name, component):
@@ -34,6 +34,9 @@ class Entity(object):
 
     def hasComponent(self, name):
         return name in self.components
+
+    def getComponentNames(self):
+        return list(self.components.keys())
 
     def hasComponents(self, *names):
         for name in names:
@@ -49,6 +52,8 @@ class Entity(object):
     def removeComponent(self, name):
         self.components.pop(name)
 
+    def __repr__(self):
+        return "<Entity id: %s>" % self.uid
 
 if __name__ == "__main__":
     import doctest
