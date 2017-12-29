@@ -52,6 +52,8 @@ class Entity(object):
     def removeComponent(self, name):
         self.components.pop(name)
 
+    def __repr__(self):
+        return "<Entity id: %s>" % self.uid
 
 if __name__ == "__main__":
     import doctest

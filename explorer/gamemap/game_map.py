@@ -1,7 +1,6 @@
-import tdl
 from ecs import Entity
 from ecs.components import Physical, Appearance, Position
-from .tile import Tile
+from explorer.gamemap.tile import Tile
 
 FOV_ALGO = 'SHADOW'  #default FOV algorithm
 FOV_LIGHT_WALLS = True
@@ -74,8 +73,6 @@ class GameMap:
         door.addComponent('physical', Physical(blocks_sight = True, blocked = True))
         return door
 
-   
-
     def getEntities(self):
         tiles = []
         for y in range(self.height):
@@ -83,14 +80,6 @@ class GameMap:
                 tiles.append(self.tiles[x][y])
                 
         return tiles
-
-    def computeFOV(self, playerX, playerY):
-        self.visible_tiles = tdl.map.quickFOV(
-            playerX, playerY, self.is_visible,
-            fov=FOV_ALGO,
-            radius=TORCH_RADIUS,
-            lightWalls=FOV_LIGHT_WALLS
-        )
 
     def __getitem__(self, key):
         return self.tiles[key]

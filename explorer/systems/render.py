@@ -3,7 +3,7 @@ import tdl
 class RenderSystem(object):
     
     def selectPlayer(self, engine):
-        return engine.getEntitiesWithComponents('position', 'player')[0]
+        return engine.entityManager.getEntitiesWithComponents('position', 'player')[0]
 
     def getLayer(self, entity):
         appearance = entity.getComponent('appearance')
@@ -27,11 +27,13 @@ class RenderSystem(object):
             newColor[i] = newChannel
         return tuple(newColor)
         
-    def __call__(self, engine, console, recompute_fov = False):
+    def __call__(self, engine, previous = None):
+        recompute_fov = previous == True
+        em = engine.entityManager
+        console = engine.console
+
         gamemap = engine.getStage()
-        player = self.selectPlayer(engine)
-        playerPosition = player.getComponent('position')
-        entities = engine.getEntitiesWithComponents('position', 'appearance', 'physical')
+        entities = em.getEntitiesWithComponents('position', 'appearance', 'physical')
         entities = sorted(entities, key=self.getLayer)
         for entity in entities:
             position = entity.getComponent('position')

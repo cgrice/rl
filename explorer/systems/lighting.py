@@ -28,13 +28,13 @@ class LightingSystem(object):
         ratio = distance / radius
         return maxStrength - strengthRange * ratio
 
-    def __call__(self, engine):
-
+    def __call__(self, engine, previous = None):
         gamemap = engine.getStage()
+        em = engine.entityManager
         
         all_visible = set()
 
-        light_sources = engine.getEntitiesWithComponents('light_source', 'position')
+        light_sources = em.getEntitiesWithComponents('light_source', 'position')
         
         for source in light_sources:
             source_position = source.getComponent('position')
@@ -47,7 +47,7 @@ class LightingSystem(object):
             visible_tiles = self.calculateVisible(source, gamemap)
             all_visible = all_visible.union(visible_tiles)
 
-            for entity in engine.getEntitiesWithComponents(
+            for entity in em.getEntitiesWithComponents(
                 'position', 'physical', 'appearance'
             ):
                 position = entity.getComponent('position')

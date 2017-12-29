@@ -6,6 +6,7 @@ class SteppedOn(object):
                 target_position = target.getComponent('position')
                 source_position = source.getComponent('position')
                 if source_position.x == target_position.x and \
-                   source_position.y == target_position.y:
+                   source_position.y == target_position.y and \
+                   source_position.stage == target_position.stage:
                    return True
         return False

@@ -1,10 +1,16 @@
 class MovementSystem(object):
 
-    def __call__(self, keys, engine, console):
+    def __call__(self, engine, previous = None):
+        keys = engine.keys
+
+        if keys == None:
+            return previous
+        
+        em = engine.entityManager
         gamemap = engine.getStage()
 
         fov_recompute = False
-        toMove = engine.getEntitiesWithComponents('position', 'moveable', 'controllable')
+        toMove = em.getEntitiesWithComponents('position', 'moveable', 'controllable')
         
         for entity in toMove:
             position = entity.getComponent('position')
