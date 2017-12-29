@@ -21,3 +21,9 @@ class MoveStage(object):
         position.x = x
         position.y = y
         target.addComponent('position', position)
+        appearance = target.getComponent('appearance')
+        
+        self.engine.addMessage(
+            '%s is now in floor %s' % (appearance.name, nextIndex), 
+            (255,200,200)
+        )

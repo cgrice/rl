@@ -61,9 +61,6 @@ class RenderSystem(object):
                     fg=fgcolor
                 )
             
-        tdl.flush()
-        console.clear()
-
         # for entity in entities:
         #     position = entity.getComponent('position')
         #     console.draw_char(position.x, position.y, ' ', bg=None, fg=None)
