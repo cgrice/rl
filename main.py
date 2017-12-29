@@ -14,6 +14,9 @@ LIMIT_FPS = 20
 tdl.set_font('dejavu12x12_gs_tc.png', greyscale=True, altLayout=True)
 
 console = tdl.init(SCREEN_WIDTH, SCREEN_HEIGHT, title="Roguelike", fullscreen=False)
+console.draw_str(SCREEN_WIDTH//2-5, SCREEN_HEIGHT//2-2, 'EXPLORER!', bg=(0,0,0))
+console.draw_str(SCREEN_WIDTH//2-8, SCREEN_HEIGHT//2, 'Loading maps...', bg=(0,0,0))
+tdl.flush()
 
 gui = Interface(console,
     width = SCREEN_WIDTH, 
@@ -61,6 +64,7 @@ engine.setStage(0)
 engine.addPlayer('Emily', '@', (255,255,255))
 engine.profile = False
 
+console.clear()
 engine.gui.render(engine)
 while engine.run():
     pass

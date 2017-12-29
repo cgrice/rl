@@ -9,9 +9,11 @@ class RenderSystem(object):
         appearance = entity.getComponent('appearance')
         return appearance.layer
 
-    def multiplyColor(self, color, ratio):
+    def lightTile(self, color, ratio, tint = False):
         newColor = [0, 0, 0]
         for i, channel in enumerate(color):
+            if tint != False:
+                channel = channel + tint[i] * ratio
             newChannel = int((channel * ratio) // 1)
             if newChannel > 255:
                 newChannel = 255
@@ -47,11 +49,9 @@ class RenderSystem(object):
                 bgcolor = appearance.bgcolor
                 fgcolor = appearance.fgcolor
                 if appearance.bgcolor != None:
-                    if appearance.tint:
-                        bgcolor = self.tintColor(bgcolor, appearance.tint)
-                    bgcolor = self.multiplyColor(bgcolor, appearance.lighting)
+                    bgcolor = self.lightTile(bgcolor, appearance.lighting, tint=appearance.tint)
                 if appearance.fgcolor != None:
-                    fgcolor = self.multiplyColor(fgcolor, appearance.lighting)
+                    fgcolor = self.lightTile(fgcolor, appearance.lighting)
                 
                 console.draw_char(
                     position.x, 

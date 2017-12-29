@@ -1,8 +1,18 @@
+from random import choice
+
 from explorer.gamemap import GameMap, Dungeon
 from ecs import Entity
 from ecs.components import Position, Appearance, Physical, Trigger
 from ecs.actions.triggers import MoveStage
 from ecs.conditions.player import SteppedOn
+
+DUNGEON_THEMES = [
+    ((48, 43, 26), (100, 100, 100)),
+    ((22, 0, 30), (85, 53, 85)),
+    ((5, 25, 5), (50, 30, 10)),
+    ((10, 10, 10), (50, 50, 50)),
+    ((40, 40, 60), (100, 100, 140)),
+]
 
 class DungeonGenerator(object):
     '''A generator which creates a standard RPG dungeon
@@ -32,6 +42,7 @@ class DungeonGenerator(object):
         # We can then generate some entities for walls and floors based on
         # the configuration of the dungeon
         gamemap = GameMap(width = width, height = height, stageIndex = stage)
+        gamemap.ground_color, gamemap.wall_color = choice(DUNGEON_THEMES)
         dungeon = Dungeon(gamemap, 
             density = density, 
             twistiness = twistiness, 

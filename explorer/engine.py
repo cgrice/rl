@@ -69,7 +69,7 @@ class Engine(object):
         player.addComponent('player', Player())
         player.addComponent('controllable', {})
         player.addComponent('moveable', {})
-        player.addComponent('light_source', LightSource(radius=8, tint=(20, 20, 5), strength=2.5))
+        player.addComponent('light_source', LightSource(radius=8, tint=(0, 0, 0), strength=3))
         self.entityManager.addEntity(player)
 
 
