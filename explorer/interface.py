@@ -10,28 +10,39 @@ INVENTORY_HEIGHT = 41
 
 class Interface(object):
 
-    def __init__(self, engine, console, width = 0, height = 0, starty = 0):
-        self.root = console
+    def __init__(self, engine, width = 0, height = 0, starty = 0):
+        self.engine = engine
+        self.terminal = engine.terminal
         self.starty = starty
+        self.startx = 0
         self.width = width
         self.height = height
         self.messages = []
-        self.engine = engine
-        
-        self.panel = tdl.Console(self.width, self.height)
-        self.inventory = tdl.Console(INVENTORY_WIDTH, INVENTORY_HEIGHT)
         self.showInventory = False
 
+    def _clear(self):
+        self.terminal.layer(0)
+        self.terminal.bkcolor(self.terminal.color_from_argb(255, 20, 20, 50))
+        self.terminal.clear_area(self.startx, self.starty, self.width, self.height)
+
+    def _rect(self, x, y, w, h, color):
+        self.terminal.bkcolor(self.terminal.color_from_argb(*color))
+        self.terminal.clear_area(x, y, w, h)
+
     def render(self):
-        self.panel.clear(bg=(20,20,50))
-        self.panel.draw_rect(0, 0, self.width, BORDER_SIZE, 1, bg=(100,100,120))
-        self.panel.draw_rect(0, self.height-1, self.width, BORDER_SIZE, 1, bg=(100,100,120))
-        self.panel.draw_rect(MSG_WIDTH, 0, BORDER_SIZE, self.height, 1, bg=(100,100,120))
+        self._clear()
+        self._rect(0, self.starty, self.width, BORDER_SIZE, (255,100,100,120))
+        self._rect(0, self.height-1, self.width, BORDER_SIZE, (255,100,100,120))
+        self._rect(MSG_WIDTH, self.starty, BORDER_SIZE, self.height, (255,100,100,120))
         self.renderStats()
         self.renderMessages(self.engine.messages)
-        self.root.blit(self.panel, 0, self.starty, self.width, self.height)
-        if self.showInventory:
-            self.renderInventory()
+        # self.root.blit(self.panel, 0, self.starty, self.width, self.height)
+        # if self.showInventory:
+        #     self.renderInventory()
+
+        self.terminal.layer(0)
+        self.terminal.color(self.terminal.color_from_argb(0, 0, 0, 0))
+        self.terminal.bkcolor(self.terminal.color_from_argb(0, 0, 0, 0))
 
     def renderInventory(self):
         self.inventory.clear()
@@ -58,7 +69,9 @@ class Interface(object):
 
     def renderStats(self):
         em = self.engine.entityManager
-        startStats = MSG_WIDTH+BORDER_SIZE
+        statsX = MSG_WIDTH+BORDER_SIZE
+        statsY = self.starty+BORDER_SIZE
+        
         player = em.getEntitiesWithComponents('player', 'appearance', 'position', 'inventory')[0]
         appearance = player.getComponent('appearance')
         position = player.getComponent('position')
@@ -69,19 +82,23 @@ class Interface(object):
         floor = "Floor:  %s" % self.engine.stageIndex
         inventory = "%s items in bag" % (len(inventory.items))
 
-        self.panel.draw_str(startStats, BORDER_SIZE, name, bg=None, fg=(255,255,255))
-        self.panel.draw_str(startStats, BORDER_SIZE + 1, health, bg=None, fg=(255,255,255))
-        self.panel.draw_str(startStats, BORDER_SIZE + 3, position, bg=None, fg=(255,255,255))
-        self.panel.draw_str(startStats, BORDER_SIZE + 4, floor, bg=None, fg=(255,255,255))
-        self.panel.draw_str(startStats, BORDER_SIZE + 5, inventory, bg=None, fg=(255,255,255))
+        self.terminal.layer(1)
+        self.terminal.color(self.terminal.color_from_argb(255, 255, 255, 255))
+        self.terminal.print(statsX, statsY, name)
+        self.terminal.print(statsX, statsY + 1, health)
+        self.terminal.print(statsX, statsY + 3, position)
+        self.terminal.print(statsX, statsY + 4, floor)
+        self.terminal.print(statsX, statsY + 5, inventory)
 
     def renderMessages(self, messages):
         messages = self.bufferMessages(messages[-8:])
         
-        y = 1
+        y = self.starty + BORDER_SIZE
         for message in messages:
             content, color = message
-            self.panel.draw_str(0, y, content, bg=None, fg=color)
+            self.terminal.layer(1)
+            self.terminal.color(self.terminal.color_from_argb(*color))
+            self.terminal.print(0, y, content)
             y += 1
 
     def bufferMessages(self, messages):

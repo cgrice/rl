@@ -9,8 +9,8 @@ class Engine(object):
     '''A game engine.
     '''
 
-    def __init__(self, console):
-        self.console = console
+    def __init__(self, terminal):
+        self.terminal = terminal
         self.systems = []
         self.stages = []
         self.messages = []
@@ -45,22 +45,22 @@ class Engine(object):
         if self.gui:
             self.gui.render()
 
-        tdl.flush()
-        self.console.clear()
+        self.terminal.refresh()
+        self.terminal.clear()
         
         # Set the input on the engine so that systems can use it
         self.keys = self.getInput()
         exit_game = not self.keys
 
-        if exit_game or tdl.event.is_window_closed():
+        if exit_game:
             return False
 
-        if self.keys.key == 'TEXT' and self.keys.text == '§':
+        if self.keys == 53:
             self.getStage().noFOW = not self.getStage().noFOW
 
-        if self.keys.key == 'TEXT' and self.keys.text == 'i':
-            self.paused = not self.paused
-            self.gui.showInventory = self.paused
+        # if self.keys.key == 'TEXT' and self.keys.text == 'i':
+        #     self.paused = not self.paused
+        #     self.gui.showInventory = self.paused
 
         return True
 
@@ -71,12 +71,15 @@ class Engine(object):
         startx, starty = self.getStage().start
         player = Entity()
         player.addComponent('position', Position(x=startx, y=starty, stage=0))
-        player.addComponent('appearance', Appearance(name, fgcolor=(255,255,255), character='@', layer=1))
+        player.addComponent('appearance', Appearance(
+            name, bgcolor=(0,0,0,0), fgcolor=(255, 255, 255, 255), 
+            character=0xED0E, layer=1
+        ))
         player.addComponent('physical', Physical(visible=True, blocked = True))
         player.addComponent('player', Player())
         player.addComponent('controllable', {})
         player.addComponent('moveable', {})
-        player.addComponent('light_source', LightSource(radius=8, tint=(0, 0, 0), strength=3))
+        player.addComponent('light_source', LightSource(radius=8, tint=(100, 0, 0, 0), strength=255))
         player.addComponent('inventory', Inventory())
         self.entityManager.addEntity(player)
 
@@ -90,13 +93,16 @@ class Engine(object):
             self.stages.append(stage)
 
     def getInput(self):
-        user_input = tdl.event.key_wait()
+        user_input = self.terminal.read()
 
-        if user_input.key == 'ENTER' and user_input.alt:
-            #Alt+Enter: toggle fullscreen
-            tdl.set_fullscreen(not tdl.get_fullscreen())
-        elif user_input.key == 'ESCAPE':
-            return False  #exit game
+        exit_keys = [self.terminal.TK_CLOSE, self.terminal.TK_ESCAPE]
+        if user_input in exit_keys:
+            return False
+
+        # if user_input == self.terminal.TK_ENTER and \
+        #    self.terminal.check(self.terminal.TK_ALT):
+        #     # Alt+Enter: toggle fullscreen
+        #     self.terminal.set('window: fullscreen=true;')
 
         return user_input
 

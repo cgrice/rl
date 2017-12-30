@@ -11,6 +11,7 @@ class MovementSystem(object):
         
         em = engine.entityManager
         gamemap = engine.getStage()
+        terminal = engine.terminal
 
         fov_recompute = False
         toMove = em.getEntitiesWithComponents('position', 'moveable', 'controllable')
@@ -23,16 +24,16 @@ class MovementSystem(object):
             
             dx, dy = (0, 0)
 
-            if keys.key == 'UP':
+            if keys == terminal.TK_UP:
                 dy -= 1 
                 fov_recompute = True
-            elif keys.key == 'DOWN':
+            elif keys == terminal.TK_DOWN:
                 dy += 1
                 fov_recompute = True
-            elif keys.key == 'LEFT':
+            elif keys == terminal.TK_LEFT:
                 dx -= 1
                 fov_recompute = True
-            elif keys.key == 'RIGHT':
+            elif keys == terminal.TK_RIGHT:
                 dx += 1
                 fov_recompute = True
 

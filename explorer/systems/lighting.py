@@ -22,11 +22,11 @@ class LightingSystem(object):
         return visible_tiles
 
     def calculateStrength(self, radius, distance, strength):
-        minStrength = 1
-        maxStrength = strength
+        maxStrength = 255
+        minStrength = 80
         strengthRange = maxStrength - minStrength
         ratio = distance / radius
-        return maxStrength - strengthRange * ratio
+        return maxStrength - int(strengthRange * ratio)
 
     def __call__(self, engine, previous = None):
         if engine.paused:

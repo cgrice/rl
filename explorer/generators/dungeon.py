@@ -1,24 +1,26 @@
 from random import choice
 
 from explorer.gamemap import GameMap, Dungeon
+from explorer.gamemap.themes.dungeon import STANDARD_DUNGEON
 from ecs import Entity
 from ecs.components import Position, Appearance, Physical, Trigger, LightSource
 from ecs.actions.triggers import MoveStage, LogMessage, AddToInventory
 from ecs.conditions.location import SteppedOn
 from ecs.conditions.components import HasComponents
 
+
 DUNGEON_THEMES = [
-    ((48, 43, 26), (100, 100, 100)),
-    ((22, 0, 30), (85, 53, 85)),
-    ((5, 25, 5), (50, 30, 10)),
-    ((10, 10, 10), (50, 50, 50)),
-    ((40, 40, 60), (100, 100, 140)),
+    ((255, 48, 43, 26), (255, 100, 100, 100)),
+    ((255, 22, 0, 30), (255, 85, 53, 85)),
+    ((255, 5, 25, 5), (255, 50, 30, 10)),
+    ((255, 10, 10, 10), (255, 50, 50, 50)),
+    ((255, 40, 40, 60), (255, 100, 100, 140)),
 ]
 
 GEM_COLORS = {
-    'red': (255, 0, 0),
-    'green': (0, 255, 0),
-    'blue': (0, 0, 255),
+    'red': (255, 255, 0, 0),
+    'green': (255, 0, 255, 0),
+    'blue': (255, 0, 0, 255),
 }
 
 class DungeonGenerator(object):
@@ -46,14 +48,22 @@ class DungeonGenerator(object):
         theme = None
     ):
         self.stage = stage
+
+        if theme != None:
+            self.theme = theme
+        else:
+            self.theme = STANDARD_DUNGEON
+
         # Create a new map with the specific width, and a dungeon to fill it.
         # We can then generate some entities for walls and floors based on
         # the configuration of the dungeon
-        gamemap = GameMap(width = width, height = height, stageIndex = stage)
-        if theme != None:
-            gamemap.ground_color, gamemap.wall_color = DUNGEON_THEMES[theme]
-        else:
-            gamemap.ground_color, gamemap.wall_color = choice(DUNGEON_THEMES)
+        gamemap = GameMap(
+            width = width, 
+            height = height, 
+            stageIndex = stage, 
+            theme = self.theme
+        )
+
         dungeon = Dungeon(gamemap, 
             density = density, 
             twistiness = twistiness, 
@@ -107,7 +117,10 @@ class DungeonGenerator(object):
             exitx, exity = gamemap.exit
             stairsdown = Entity()
             stairsdown.addComponent('position', Position(x=exitx, y=exity, stage=self.stage))
-            stairsdown.addComponent('appearance', Appearance('stairs', layer=1, character=25, fgcolor=(255, 255, 255), bgcolor=(10, 0, 00)))
+            stairsdown.addComponent('appearance', Appearance('stairs', 
+                layer=1, character=self.theme['tiles']['stairs-down'], 
+                fgcolor=(255, 255, 255, 255), 
+                bgcolor=(255, 0, 0, 0)))
             stairsdown.addComponent('physical', Physical(blocks_sight = False, blocked = False))
             stairsTrigger = Trigger(
                 actions = [
@@ -124,7 +137,10 @@ class DungeonGenerator(object):
             startx, starty = gamemap.start
             stairsup = Entity()
             stairsup.addComponent('position', Position(x=startx, y=starty, stage=self.stage))
-            stairsup.addComponent('appearance', Appearance('stairs', layer=1, character=24, fgcolor=(255, 255, 255), bgcolor=(10, 0, 00)))
+            stairsup.addComponent('appearance', Appearance('stairs', 
+                layer=1, character=self.theme['tiles']['stairs-up'], 
+                fgcolor=(255, 255, 255, 255)
+            ))
             stairsup.addComponent('physical', Physical(blocks_sight = False, blocked = False))
             stairsTrigger = Trigger(
                 actions = [MoveStage(self.engine, direction = -1)],

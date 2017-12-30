@@ -13,10 +13,10 @@ class MoveStage(object):
 
         if self.direction > 0:
             x, y = stage.start
-            y = y + 1
+            x = x + 1
         else:
             x, y = stage.exit
-            y = y - 1
+            x = x - 1
 
         position.x = x
         position.y = y
@@ -25,7 +25,7 @@ class MoveStage(object):
         
         self.engine.addMessage(
             '%s is now in floor %s' % (appearance.name, nextIndex), 
-            (255,200,200)
+            (255,255,200,200)
         )
 
 class LogMessage(object):
@@ -37,7 +37,7 @@ class LogMessage(object):
     def __call__(self, source, target):
         appearance = target.getComponent('appearance')
         message = '%s %s' % (appearance.name, self.message)
-        self.engine.addMessage(message, (255, 200, 200))
+        self.engine.addMessage(message, (255, 255, 200, 200))
 
 class AddToInventory(object):
 

@@ -20,7 +20,7 @@ class Dungeon:
             (0, 1),
             (0, -1)
         ]
-        self.color = (50, 50, 150)
+        self.color = (255, 50, 50, 150)
         self.twistiness = twistiness
         self.density = density
         self.connectivity = 100 - connectivity
