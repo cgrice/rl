@@ -19,6 +19,7 @@ class EntityManager(object):
     def __init__(self):
         self.entities = {}
         self.componentMap = {}
+        self.map = {}
 
     def addEntity(self, entity):
         self.entities[entity.uid] = entity

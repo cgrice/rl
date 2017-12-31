@@ -5,7 +5,7 @@ class Appearance(object):
         fgcolor = None, 
         character = ' ', 
         layer = 0,
-        lighting = 1
+        lighting = False
     ):
         self.name = name
         self.fgcolor = fgcolor
@@ -13,4 +13,3 @@ class Appearance(object):
         self.character = character
         self.layer = layer
         self.lighting = lighting
-        self.tint = False

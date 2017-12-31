@@ -3,7 +3,7 @@ class TriggerSystem(object):
     def __call__(self, engine, previous = None):
         if engine.paused:
             return previous
-        
+
         em = engine.entityManager
         try:
             player = em.getEntitiesWithComponents('player')[0]
@@ -15,4 +15,4 @@ class TriggerSystem(object):
             raise e
             pass
 
-        return True
+        return previous

@@ -37,7 +37,7 @@ class LogMessage(object):
     def __call__(self, source, target):
         appearance = target.getComponent('appearance')
         message = '%s %s' % (appearance.name, self.message)
-        self.engine.addMessage(message, (255, 255, 200, 200))
+        self.engine.addMessage(message, (255, 100, 100, 0))
 
 class AddToInventory(object):
 

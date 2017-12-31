@@ -2,11 +2,11 @@ import tdl
 import textwrap
 
 PANEL_HEIGHT = 20
-MSG_WIDTH = 40
+MSG_WIDTH = 38
 STATS_WIDTH = 40
 BORDER_SIZE = 1
-INVENTORY_WIDTH = 41
-INVENTORY_HEIGHT = 41
+INVENTORY_WIDTH = 35
+INVENTORY_HEIGHT = 30
 
 class Interface(object):
 
@@ -21,55 +21,89 @@ class Interface(object):
         self.showInventory = False
 
     def _clear(self):
-        self.terminal.layer(0)
-        self.terminal.bkcolor(self.terminal.color_from_argb(255, 20, 20, 50))
-        self.terminal.clear_area(self.startx, self.starty, self.width, self.height)
+        self.terminal.layer(100)
+        self.terminal.bkcolor(self.terminal.color_from_argb(255, 255, 255, 200))
+        self.terminal.color(self.terminal.color_from_argb(255, 255, 255, 255))
+        # self.terminal.clear_area(self.startx, self.starty, self.width, self.height)
 
     def _rect(self, x, y, w, h, color):
         self.terminal.bkcolor(self.terminal.color_from_argb(*color))
         self.terminal.clear_area(x, y, w, h)
 
+    def _widget(self, x, y, w, h, title = False):
+        # topLeft = 0xE5BD
+        # topRight = 0xE5BF
+        # bottomLeft = 0xE62F
+        # bottomRight = 0xE631
+        # topBorder = 0xE5BE
+        # leftBorder = 0xE5F6
+        # rightBorder = 0xE5F8
+        # bottomBorder = 0xE630
+        # background = 0xE5F7
+        topLeft = 0xE5BA
+        topRight = 0xE5BC
+        bottomLeft = 0xE62C
+        bottomRight = 0xE62E
+        topBorder = 0xE5BB
+        leftBorder = 0xE5F3
+        rightBorder = 0xE5F5
+        bottomBorder = 0xE62D
+        background = 0xE5F4
+
+        self.terminal.put(x, y, topLeft)
+        self.terminal.put(x+w, y, topRight)
+        self.terminal.put(x+w, y+h, bottomRight)
+        self.terminal.put(x, y+h, bottomLeft)
+        for xPos in range(x+1, x+w):
+            self.terminal.put(xPos, y, topBorder)
+            self.terminal.put(xPos, y+h, bottomBorder)
+            for yPos in range(y+1, y+h):
+                self.terminal.put(x, yPos, leftBorder)
+                self.terminal.put(x+w, yPos, rightBorder)
+                self.terminal.put(xPos, yPos, background)
+
+        if title != False:
+            centerx = x + (w // 2) - (len(title) // 2)
+            self.terminal.layer(111)
+            self.terminal.bkcolor(self.terminal.color_from_argb(255, 0, 0, 0))
+            self.terminal.color(self.terminal.color_from_argb(255, 0, 0, 0))
+            self.terminal.print(centerx, y+2, title)
+
     def render(self):
         self._clear()
-        self._rect(0, self.starty, self.width, BORDER_SIZE, (255,100,100,120))
-        self._rect(0, self.height-1, self.width, BORDER_SIZE, (255,100,100,120))
-        self._rect(MSG_WIDTH, self.starty, BORDER_SIZE, self.height, (255,100,100,120))
+        self._widget(1, self.starty, MSG_WIDTH, self.height)
+        self._widget(MSG_WIDTH+3, self.starty, MSG_WIDTH, self.height)
         self.renderStats()
         self.renderMessages(self.engine.messages)
-        # self.root.blit(self.panel, 0, self.starty, self.width, self.height)
-        # if self.showInventory:
-        #     self.renderInventory()
+        if self.showInventory:
+            self.renderInventory()
 
         self.terminal.layer(0)
-        self.terminal.color(self.terminal.color_from_argb(0, 0, 0, 0))
-        self.terminal.bkcolor(self.terminal.color_from_argb(0, 0, 0, 0))
+        self.terminal.color(self.terminal.color_from_argb(255, 0, 0, 0))
+        self.terminal.bkcolor(self.terminal.color_from_argb(255, 0, 0, 0))
 
     def renderInventory(self):
-        self.inventory.clear()
+        startx = (self.width // 2) - (INVENTORY_WIDTH // 2)
+        starty = (self.height // 4) - (INVENTORY_HEIGHT // 4)
+        self.terminal.layer(110)
+        self.terminal.color(self.terminal.color_from_argb(255, 255, 255, 255))
+        self.terminal.bkcolor(self.terminal.color_from_argb(255, 255, 255, 255))
+        self._widget(startx, starty, INVENTORY_WIDTH, INVENTORY_HEIGHT, title="CHARACTER INVENTORY")
+
         em = self.engine.entityManager
         player = em.getEntitiesWithComponents('player', 'appearance', 'position', 'inventory')[0]
         inventory = player.getComponent('inventory')
-
-        startx = 0
-        starty = 0
-        centerx = INVENTORY_WIDTH // 2
-        self.inventory.draw_rect(0, 0, INVENTORY_WIDTH, INVENTORY_HEIGHT, 1, bg=(50,20,50))
-        self.inventory.draw_rect(0, 0, INVENTORY_WIDTH, BORDER_SIZE, 1, bg=(100,100,120))
-        self.inventory.draw_rect(INVENTORY_WIDTH - 1, 0, BORDER_SIZE, INVENTORY_HEIGHT, 1, bg=(100,100,120))
-        self.inventory.draw_str(centerx - 10, 2, 'CHARACTER INVENTORY', bg=None, fg=(255,255,255))
-
-        index = 4
+        self.terminal.layer(111)
+        index = 5
         for itemid in inventory.items:
             item = em.getEntity(itemid)
             appearance = item.getComponent('appearance')
-            self.inventory.draw_str(1, index, appearance.name, fg=(255,255,255), bg=None)
-
-        self.root.blit(self.inventory, startx, starty, INVENTORY_WIDTH, INVENTORY_HEIGHT)
+            self.terminal.print(startx+1, starty+index, appearance.name)
 
 
     def renderStats(self):
         em = self.engine.entityManager
-        statsX = MSG_WIDTH+BORDER_SIZE
+        statsX = MSG_WIDTH+BORDER_SIZE+3
         statsY = self.starty+BORDER_SIZE
         
         player = em.getEntitiesWithComponents('player', 'appearance', 'position', 'inventory')[0]
@@ -82,8 +116,8 @@ class Interface(object):
         floor = "Floor:  %s" % self.engine.stageIndex
         inventory = "%s items in bag" % (len(inventory.items))
 
-        self.terminal.layer(1)
-        self.terminal.color(self.terminal.color_from_argb(255, 255, 255, 255))
+        self.terminal.layer(101)
+        self.terminal.color(self.terminal.color_from_argb(255, 0, 0, 0))
         self.terminal.print(statsX, statsY, name)
         self.terminal.print(statsX, statsY + 1, health)
         self.terminal.print(statsX, statsY + 3, position)
@@ -91,14 +125,18 @@ class Interface(object):
         self.terminal.print(statsX, statsY + 5, inventory)
 
     def renderMessages(self, messages):
+        self.terminal.layer(101)
+        self.terminal.bkcolor(self.terminal.color_from_argb(255, 255, 255, 255))
+        self.terminal.color(self.terminal.color_from_argb(255, 0, 0, 0))
+
         messages = self.bufferMessages(messages[-8:])
         
         y = self.starty + BORDER_SIZE
         for message in messages:
             content, color = message
-            self.terminal.layer(1)
-            self.terminal.color(self.terminal.color_from_argb(*color))
-            self.terminal.print(0, y, content)
+            self.terminal.color(self.terminal.color_from_argb(255, 0, 0, 0))
+            # self.terminal.color(self.terminal.color_from_argb(*color))
+            self.terminal.print(2, y, content)
             y += 1
 
     def bufferMessages(self, messages):
@@ -106,7 +144,7 @@ class Interface(object):
         for message in reversed(messages):
             content, color = message
             #split the message if necessary, among multiple lines
-            lines = textwrap.wrap(content, MSG_WIDTH)
+            lines = textwrap.wrap(content, MSG_WIDTH-1)
  
             for line in lines:
                 #if the buffer is full, remove the first line to make room for the new one

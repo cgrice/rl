@@ -58,9 +58,9 @@ class Engine(object):
         if self.keys == 53:
             self.getStage().noFOW = not self.getStage().noFOW
 
-        # if self.keys.key == 'TEXT' and self.keys.text == 'i':
-        #     self.paused = not self.paused
-        #     self.gui.showInventory = self.paused
+        if self.keys == self.terminal.TK_I:
+            self.paused = not self.paused
+            self.gui.showInventory = self.paused
 
         return True
 
@@ -73,13 +73,13 @@ class Engine(object):
         player.addComponent('position', Position(x=startx, y=starty, stage=0))
         player.addComponent('appearance', Appearance(
             name, bgcolor=(0,0,0,0), fgcolor=(255, 255, 255, 255), 
-            character=0xED0E, layer=1
+            character=0xED0E, layer=10
         ))
         player.addComponent('physical', Physical(visible=True, blocked = True))
         player.addComponent('player', Player())
         player.addComponent('controllable', {})
         player.addComponent('moveable', {})
-        player.addComponent('light_source', LightSource(radius=8, tint=(100, 0, 0, 0), strength=255))
+        player.addComponent('light_source', LightSource(radius=8, tint=(0, 0, 0, 0), strength=255))
         player.addComponent('inventory', Inventory())
         self.entityManager.addEntity(player)
 

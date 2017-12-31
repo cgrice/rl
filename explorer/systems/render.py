@@ -19,19 +19,11 @@ class RenderSystem(object):
         else:
             terminal.bkcolor(terminal.color_from_argb(*bg))
 
-    def lightTile(self, color, strength, tint = False):
-        newColor = [strength, color[1], color[2], color[3]]
-        # for i, channel in enumerate(color):
-        #     if i == 0:
-        #         newChannel = channel *
-        #     else:
-        #         if tint != False:
-        #             channel = channel + tint[i] * ratio
-        #         newChannel = int((channel * ratio) // 1)
-        #         if newChannel > 255:
-        #             newChannel = 255
-        #     newColor[i] = newChannel
-        return tuple(newColor)
+    def lightTile(self, terminal, x, y, color):
+        self.setColors(terminal, fg=color)
+        terminal.layer(100)
+
+        terminal.put(x, y, 0xEFFF)
 
     def __call__(self, engine, previous = None):
         recompute_fov = previous == True
@@ -52,20 +44,17 @@ class RenderSystem(object):
 
                 bgcolor = appearance.bgcolor
                 fgcolor = appearance.fgcolor
-                if appearance.bgcolor != None:
-                    bgcolor = self.lightTile(bgcolor, appearance.lighting, tint=appearance.tint)
-                if appearance.fgcolor != None:
-                    fgcolor = self.lightTile(fgcolor, appearance.lighting)
-
+                
                 if physical.explored and not physical.visible:
                     bgcolor = (255, 0, 0, 0)
-                    fgcolor = (50, 255, 255, 255)
-                
+                    fgcolor = (40, 255, 255, 255)
+
+
                 self.setColors(terminal, fg=fgcolor, bg=bgcolor)
                 terminal.layer(appearance.layer)
 
                 terminal.put(position.x, position.y, appearance.character)
-            
+
         self.setColors(terminal, fg=(0, 0, 0, 0), bg=(0, 0, 0, 0))
 
 

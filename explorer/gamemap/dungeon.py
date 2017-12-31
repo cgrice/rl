@@ -134,11 +134,11 @@ class Dungeon:
     def _fillMap(self):
         for x, row in enumerate(self.map.tiles):
             for y, tile in enumerate(row):
-                self.map[x][y] = self.map.createWall(x, y)
+                self.map[x][y].add(self.map.createWall(x, y))
 
     def _carve(self, x, y):
         floor = self.map.createFloor(x, y)
-        self.map[x][y] = floor
+        self.map[x][y] = set([floor])
         self.regions[x][y] = self.currentRegion
 
     def _canCarve(self, x, y, dx, dy):
@@ -238,11 +238,16 @@ class Dungeon:
                 connectors.remove(pos)
 
     def _carveConnector(self, x, y):
+        connectors = set()
+        
+        floor = self.map.createFloor(x, y)
+        connectors.add(floor)
+
         if randint(0, 100) > 500:
-            connector = self.map.createDoor(x, y)
-        else:
-            connector = self.map.createFloor(x, y)
-        self.map[x][y] = connector
+            door = self.map.createDoor(x, y)
+            connectors.add(door)
+
+        self.map[x][y] = connectors
         self.regions[x][y] = self.currentRegion
 
     def _startRegion(self):
@@ -269,7 +274,7 @@ class Dungeon:
                     if exits <= 1: 
                         done = False
                         wall = self.map.createWall(x, y)
-                        self.map[x][y] = wall
+                        self.map[x][y] = set([wall])
 
     def _distance(self, p0, p1):
         return math.sqrt((p0[0] - p1[0])**2 + (p0[1] - p1[1])**2)

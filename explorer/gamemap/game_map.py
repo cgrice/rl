@@ -22,10 +22,10 @@ class GameMap:
         self.ground_color = self.theme['ground-color']
         self.wall_color = self.theme['wall-color']
 
-        self.tiles = [[ Tile(False)
+        self.tiles = [[ set()
         for y in range(self.height) ]
             for x in range(self.width) ]
-        self.blocked = [[ Tile(False)
+        self.blocked = [[ set()
         for y in range(self.height) ]
             for x in range(self.width) ]
         self.visible_tiles = []
@@ -40,10 +40,17 @@ class GameMap:
 
     def is_blocked(self, x, y):
         try:
-            physical = self.tiles[x][y].getComponent('physical')
-            blocked = physical.blocked
-            blocks_sight = physical.blocks_sight
-            return blocked and blocks_sight
+            for entity in self.tiles[x][y]:
+                physical = entity.getComponent('physical')
+
+                if physical == False:
+                    continue
+
+                blocked = physical.blocked
+                blocks_sight = physical.blocks_sight
+                if blocked and blocks_sight:
+                    return True
+            return False
         except:
             return True
 
@@ -70,7 +77,7 @@ class GameMap:
         wallTile = choice(self.theme['tiles']['wall'])
         wall = Entity()
         wall.addComponent('position', Position(x=x, y=y, stage=self.stageIndex))
-        wall.addComponent('appearance', Appearance('wall', character=wallTile, bgcolor=color, fgcolor=(100,255,255,255), layer=0))
+        wall.addComponent('appearance', Appearance('wall', character=wallTile, bgcolor=color, fgcolor=(255,255,255,255), layer=0))
         wall.addComponent('physical', Physical(blocks_sight = True, blocked = True))
         return wall
 
@@ -87,22 +94,24 @@ class GameMap:
         floorTile = choice(self.theme['tiles']['ground'])
         floor = Entity()
         floor.addComponent('position', Position(x=x, y=y, stage=self.stageIndex))
-        floor.addComponent('appearance', Appearance('floor', character=floorTile, bgcolor=color, fgcolor=(100,255,255,255), layer=0))
+        floor.addComponent('appearance', Appearance('floor', character=floorTile, bgcolor=color, fgcolor=(255,255,255,255), layer=0))
         floor.addComponent('physical', Physical(blocks_sight = False, blocked = False))
         return floor
 
-    # def createDoor(self, x, y):
-    #     door = Entity()
-    #     door.addComponent('position', Position(x=x, y=y, stage=self.stageIndex))
-    #     door.addComponent('appearance', Appearance('door', bgcolor=color_dark_door, layer=0))
-    #     door.addComponent('physical', Physical(blocks_sight = True, blocked = True))
-    #     return door
+    def createDoor(self, x, y):
+        color = self.ground_color
+        door = Entity()
+        door.addComponent('position', Position(x=x, y=y, stage=self.stageIndex))
+        door.addComponent('appearance', Appearance('door', character=0xE021, bgcolor=color, fgcolor=(255,255,255,255), layer=1))
+        door.addComponent('physical', Physical(blocks_sight = True, blocked = True))
+        return door
 
     def getEntities(self):
         tiles = []
         for y in range(self.height):
             for x in range(self.width):
-                tiles.append(self.tiles[x][y])
+                for entity in self.tiles[x][y]:
+                    tiles.append(entity)
                 
         return tiles
 

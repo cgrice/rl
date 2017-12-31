@@ -96,7 +96,7 @@ class DungeonGenerator(object):
         gem.addComponent('position', Position(x=gemx, y=gemy, stage=self.stage))
         gem.addComponent('physical', Physical(blocks_sight = False, blocked = False))
         gem.addComponent('appearance', Appearance('A shiny %s gem' % gemColor, layer=1, character='*', fgcolor=GEM_COLORS[gemColor]))
-        # gem.addComponent('light_source', LightSource(radius=2, strength=3, tint=(10,0,0)))
+        gem.addComponent('light_source', LightSource(radius=4, strength=100, tint=GEM_COLORS[gemColor]))
         gemTrigger = Trigger(
             actions = [
                 LogMessage(self.engine, message = 'picked up a shiny %s gem' % gemColor),

@@ -6,8 +6,8 @@ STANDARD_DUNGEON = {
     'wall-color': (255, 100, 100, 100),
     'ground-color': (255, 0, 0, 0),
     'tiles': {
-        'wall': [' '],
-        'ground': GROUND_STONE,
+        'wall': GROUND_STONE,
+        'ground': GROUND_DIRT,
         'stairs-down': STAIRS_STONE_DOWN_RIGHT,
         'stairs-up': STAIRS_STONE_UP_LEFT,
     }

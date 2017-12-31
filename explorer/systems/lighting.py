@@ -23,83 +23,110 @@ class LightingSystem(object):
 
     def calculateStrength(self, radius, distance, strength):
         maxStrength = 255
-        minStrength = 80
+        minStrength = 40
         strengthRange = maxStrength - minStrength
         ratio = distance / radius
         return maxStrength - int(strengthRange * ratio)
 
+    def _tint(self, original, tint):
+        new = original + tint
+        if new > 255:
+            new = 255
+        return 255
+
+    def lightTile(self, color, strength):
+        newColor = [strength, color[1], color[2], color[3]]
+            
+        return tuple(newColor)
+
+    def _averageColor(self, colors):
+        alpha = 0
+        r = 0
+        g = 0
+        b = 0
+
+        for color in colors:
+            alpha += color[0]
+            r += color[1]
+            g += color[2]
+            b += color[3]
+        
+        alpha = int((alpha / len(colors)) // 1)
+        r = int((r / len(colors)) // 1)
+        g = int((g / len(colors)) // 1)
+        b = int((b / len(colors)) // 1)
+
+        # if alpha > 255:
+        #     alpha = 255
+
+        return (alpha, r, g, b)
+
     def __call__(self, engine, previous = None):
-        if engine.paused:
+        recalculate_fov = previous
+
+        if engine.paused or recalculate_fov == False:
             return previous
+
+        lightingMap = {}
         
         gamemap = engine.getStage()
         em = engine.entityManager
         
-        all_visible = set()
-
         light_sources = em.getEntitiesWithComponents('light_source', 'position')
         
+        valid_sources = 0
         for source in light_sources:
             source_position = source.getComponent('position')
-
             if source_position.stage != gamemap.stageIndex:
                 continue
-            
-            light = source.getComponent('light_source')
-            
             visible_tiles = self.calculateVisible(source, gamemap)
-            all_visible = all_visible.union(visible_tiles)
+            for (x, y) in visible_tiles:
+                if (x, y) not in lightingMap:
+                    lightingMap[(x, y)] = set()
+                lightingMap[(x, y)].add(source)
+            valid_sources += 1
 
-            for entity in em.getEntitiesWithComponents(
-                'position', 'physical', 'appearance'
-            ):
-                position = entity.getComponent('position')
-                appearance = entity.getComponent('appearance')
+        if valid_sources == 0:
+            return previous
 
-                if position.stage != gamemap.stageIndex:
-                    continue
+        entities = em.getEntitiesWithComponents(
+            'position', 'physical', 'appearance'
+        )
 
-                physical = entity.getComponent('physical')
-                x, y = position.x, position.y
-                visible = (x, y) in visible_tiles
+        for entity in entities:
+            position = entity.getComponent('position')
+            appearance = entity.getComponent('appearance')
+            if position.stage != gamemap.stageIndex or appearance.layer != 0:
+                continue
 
-                physical.visible = visible
-                appearance.lighting = 1
-                appearance.tint = False
+            x, y = position.x, position.y
+            lit = (x, y) in lightingMap
 
-                if visible:
+            if lit:
+                
+                fgcolors = []
+                bgcolors = []
+
+                for source in lightingMap[(x, y)]:
+                    light = source.getComponent('light_source')
+                    source_position = source.getComponent('position')
+
+                    appearance = entity.getComponent('appearance')
+
                     distance = self._distance(source_position.x, source_position.y, x, y)
-                    appearance.lighting = self.calculateStrength(light.radius, distance, light.strength)
-                    appearance.tint = light.tint
+                    lighting = self.calculateStrength(light.radius, distance, light.strength)
+                    
+                    if light.tint:
+                        bgcolor = self.lightTile(light.tint, lighting)
+                        bgcolors.append(bgcolor)
+                    if appearance.fgcolor != None:
+                        fgcolor = self.lightTile(appearance.fgcolor, lighting)
+                        fgcolors.append(fgcolor)
 
-                if visible or gamemap.noFOW:
-                    physical.explored = True
+                    
+                appearance.bgcolor = self._averageColor(bgcolors)
+                appearance.fgcolor = self._averageColor(fgcolors)
 
                 entity.addComponent('appearance', appearance)
-                entity.addComponent('physical', physical)
-
-            # for y in range(gamemap.height):
-            #     for x in range(gamemap.width):
-            #         visible = (x, y) in visible_tiles
                 
-            #         physical = gamemap.tiles[x][y].getComponent('physical')
-            #         appearance = gamemap.tiles[x][y].getComponent('appearance')
-            #         position = gamemap.tiles[x][y].getComponent('position')
-
-            #         if position.stage != gamemap.stageIndex:
-            #             continue
-
-            #         appearance.lighting = 1
-            #         appearance.tint = False
-            #         physical.visible = visible
-
-            #         if visible:
-            #             distance = self._distance(source_position.x, source_position.y, x, y)
-            #             appearance.lighting = self.calculateStrength(light.radius, distance, light.strength)
-            #             appearance.tint = light.tint
-
-            #         if visible or gamemap.noFOW:
-            #             physical.explored = True
-
-            #         gamemap.tiles[x][y].addComponent('physical', physical)
-            #         gamemap.tiles[x][y].addComponent('appearance', appearance)
+        return previous

@@ -4,7 +4,7 @@ import time
 
 from explorer.generators.dungeon import DungeonGenerator
 from explorer.gamemap.themes.dungeon import GRASS_DUNGEON
-from explorer.systems import RenderSystem, ProgressSystem, \
+from explorer.systems import RenderSystem, ProgressSystem, FOVSystem, \
                              MovementSystem, LightingSystem, TriggerSystem
 from ecs.conditions.inventory import HasItems
 from explorer.engine import Engine
@@ -21,15 +21,14 @@ tdl.set_font('dejavu16x16_gs_tc.png', greyscale=True, altLayout=True)
 
 terminal.open()
 terminal.set("font: dejavu16x16_gs_tc.png, size=16x16, codepage=tcod;")
-# terminal.set("0xE000: tileset16x16.bmp, size=16x16, spacing=1x1, transparent=black;")
 terminal.set("0xE000: tiles16x16.png, size=16x16;")
-# terminal.set("0xE000: tileset.png, size=32x32, resize=64x64, spacing=1x1;")
 terminal.set("0xEC00: characters16x16.png, size=16x16;")
-terminal.set("0xEF00: jungle.png, size=640x400, align=top-left;")
+terminal.set("0xEFFF: light.png, size=16x16;")
 terminal.set("window: title=%s, size=%sx%s, cellsize=16x16;" % (TITLE, SCREEN_WIDTH, SCREEN_HEIGHT))
 
 terminal.printf(SCREEN_WIDTH//2-5, SCREEN_HEIGHT//2-2, 'EXPLORER!')
 terminal.printf(SCREEN_WIDTH//2-8, SCREEN_HEIGHT//2, 'Loading maps...')
+terminal.refresh()
 
 # y = 0
 # x = 0
@@ -60,7 +59,7 @@ terminal.printf(SCREEN_WIDTH//2-8, SCREEN_HEIGHT//2, 'Loading maps...')
 #     pass
 
 engine = Engine(terminal)
-engine.addMessage("Welcome to EXPLORER! Get to the bottom of the map to win the game. Happy hunting!", (255,255,255,255))
+engine.addMessage("Welcome to EXPLORER! Get to the bottom of the map to win the game. Happy hunting!", (255,100,100,0))
 
 gui = Interface(engine,
     width = SCREEN_WIDTH, 
@@ -71,6 +70,7 @@ engine.gui = gui
 engine.addSystems(
     MovementSystem(),
     TriggerSystem(),
+    FOVSystem(),
     LightingSystem(),
     RenderSystem(),
 )
