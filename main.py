@@ -80,7 +80,7 @@ engine.addStages(
         width = SCREEN_WIDTH, height = MAP_HEIGHT, stage = 0,
         density = 1000, twistiness = 70, connectivity = 30, 
         minRoomSize = 2, maxRoomSize = 5,
-        exits = 1, entrances = 0
+        exits = 1, entrances = 0, theme = GRASS_DUNGEON,
     ),
     dungeonGenerator.generate(
         width = SCREEN_WIDTH, height = MAP_HEIGHT, stage = 1,
@@ -110,7 +110,7 @@ engine.addSystems(
 )
 engine.setStage(0)
 engine.addPlayer('Emily', '@', (255,255,255,255))
-engine.profile = True
+engine.profile = False
 
 terminal.clear()
 engine.gui.render()

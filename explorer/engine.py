@@ -12,7 +12,7 @@ class Engine(object):
     def __init__(self, terminal):
         self.terminal = terminal
         self.systems = []
-        self.stages = []
+        self.stages = {}
         self.messages = []
         self.entityManager = EntityManager()
         self.stageIndex = -1
@@ -89,8 +89,10 @@ class Engine(object):
             self.systems.append(system)
 
     def addStages(self, *args):
+        index = self.stageIndex
         for stage in args:
-            self.stages.append(stage)
+            index += 1
+            self.stages[index] = stage
 
     def getInput(self):
         user_input = self.terminal.read()

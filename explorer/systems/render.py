@@ -32,6 +32,7 @@ class RenderSystem(object):
 
         gamemap = engine.getStage()
         entities = em.getEntitiesWithComponents('position', 'appearance', 'physical')
+        
         for entity in entities:
             position = entity.getComponent('position')
             if position.stage != gamemap.stageIndex:
