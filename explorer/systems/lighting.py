@@ -71,6 +71,7 @@ class LightingSystem(object):
         
         gamemap = engine.getStage()
         em = engine.entityManager
+        camera = engine.camera
         
         light_sources = em.getEntitiesWithComponents('light_source', 'position')
         
@@ -81,53 +82,60 @@ class LightingSystem(object):
                 continue
             visible_tiles = self.calculateVisible(source, gamemap)
             for (x, y) in visible_tiles:
-                if (x, y) not in lightingMap:
-                    lightingMap[(x, y)] = set()
-                lightingMap[(x, y)].add(source)
+                mapX, mapY = camera.toCameraPosition(x, y)
+                if (mapX, mapY) not in lightingMap:
+                    lightingMap[(mapX, mapY)] = set()
+                lightingMap[(mapX, mapY)].add(source)
             valid_sources += 1
 
         if valid_sources == 0:
             return previous
 
-        entities = em.getEntitiesWithComponents(
-            'position', 'physical', 'appearance'
-        )
 
-        for entity in entities:
-            position = entity.getComponent('position')
-            appearance = entity.getComponent('appearance')
+        for y in range(camera.height):
+            for x in range(camera.width):
+                try:
+                    mapX = x + camera.x
+                    mapY = y + camera.y
+                    entities = gamemap[mapX][mapY]
+                except Exception as e:
+                    raise e
+                    continue
 
-            if position.stage != gamemap.stageIndex or appearance.layer != 0:
-                continue
-
-            x, y = position.x, position.y
-            lit = (x, y) in lightingMap
-
-            if lit:
-                
-                fgcolors = []
-                bgcolors = []
-
-                for source in lightingMap[(x, y)]:
-                    light = source.getComponent('light_source')
-                    source_position = source.getComponent('position')
-
+                for entity in entities:
+                    position = entity.getComponent('position')
                     appearance = entity.getComponent('appearance')
 
-                    distance = self._distance(source_position.x, source_position.y, x, y)
-                    lighting = self.calculateStrength(light.radius, distance, light.strength)
-                    
-                    if light.tint:
-                        bgcolor = self.lightTile(light.tint, lighting)
-                        bgcolors.append(bgcolor)
-                    if appearance.fgcolor != None:
-                        fgcolor = self.lightTile(appearance.fgcolor, lighting)
-                        fgcolors.append(fgcolor)
+                    if position.stage != gamemap.stageIndex or appearance.layer != 0:
+                        continue
 
-                    
-                appearance.bgcolor = self._averageColor(bgcolors)
-                appearance.fgcolor = self._averageColor(fgcolors)
+                    lit = (position.x, position.y) in lightingMap
 
-                entity.addComponent('appearance', appearance)
+                    if lit:
+                        
+                        fgcolors = []
+                        bgcolors = []
+
+                        for source in lightingMap[(mapX, mapY)]:
+                            light = source.getComponent('light_source')
+                            source_position = source.getComponent('position')
+
+                            appearance = entity.getComponent('appearance')
+
+                            distance = self._distance(source_position.x, source_position.y, x, y)
+                            lighting = self.calculateStrength(light.radius, distance, light.strength)
+                            
+                            if light.tint:
+                                bgcolor = self.lightTile(light.tint, lighting)
+                                bgcolors.append(bgcolor)
+                            if appearance.fgcolor != None:
+                                fgcolor = self.lightTile(appearance.fgcolor, lighting)
+                                fgcolors.append(fgcolor)
+
+                            
+                        appearance.bgcolor = self._averageColor(bgcolors)
+                        appearance.fgcolor = self._averageColor(fgcolors)
+
+                        entity.addComponent('appearance', appearance)
                 
         return previous

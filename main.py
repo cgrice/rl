@@ -81,28 +81,28 @@ dungeonGenerator = DungeonGenerator(engine)
 engine.addStages(
     dungeonGenerator.generate(
         width = MAP_WIDTH, height = MAP_HEIGHT, stage = 0,
-        density = 1000, twistiness = 70, connectivity = 30, 
+        density = 1000, twistiness = 70, connectivity = 100, 
         minRoomSize = 2, maxRoomSize = 5,
         exits = 1, entrances = 0, theme = GRASS_DUNGEON,
     ),
-    dungeonGenerator.generate(
-        width = MAP_WIDTH, height = MAP_HEIGHT, stage = 1,
-        density = 10000, twistiness = 80, connectivity = 8, 
-        minRoomSize = 2, maxRoomSize = 5, 
-        exits = 1, entrances = 1
-    ),
-    dungeonGenerator.generate(
-        width = MAP_WIDTH, height = MAP_HEIGHT, stage = 2,
-        density = 100, twistiness = 20, connectivity = 20, 
-        minRoomSize = 2, maxRoomSize = 5,
-        exits = 1, entrances = 1
-    ),
-    dungeonGenerator.generate(
-        width = MAP_WIDTH, height = MAP_HEIGHT, stage = 3,
-        density = 100, twistiness = 20, connectivity = 20, 
-        minRoomSize = 2, maxRoomSize = 5,
-        exits = 0, entrances = 1
-    )
+    # dungeonGenerator.generate(
+    #     width = MAP_WIDTH, height = MAP_HEIGHT, stage = 1,
+    #     density = 10000, twistiness = 80, connectivity = 8, 
+    #     minRoomSize = 2, maxRoomSize = 5, 
+    #     exits = 1, entrances = 1
+    # ),
+    # dungeonGenerator.generate(
+    #     width = MAP_WIDTH, height = MAP_HEIGHT, stage = 2,
+    #     density = 100, twistiness = 20, connectivity = 20, 
+    #     minRoomSize = 2, maxRoomSize = 5,
+    #     exits = 1, entrances = 1
+    # ),
+    # dungeonGenerator.generate(
+    #     width = MAP_WIDTH, height = MAP_HEIGHT, stage = 3,
+    #     density = 100, twistiness = 20, connectivity = 20, 
+    #     minRoomSize = 2, maxRoomSize = 5,
+    #     exits = 0, entrances = 1
+    # )
 )
 gems = engine.entityManager.getEntitiesWithComponents('essential')
 essential = [gem.uid for gem in gems]

@@ -28,28 +28,35 @@ class FOVSystem(object):
         lightingMap = {}
         
         gamemap = engine.getStage()
+        camera = engine.camera
         em = engine.entityManager
         
         player = em.getEntitiesWithComponents('player', 'position')[0]
         
         visible_tiles = self.calculateVisible(player, gamemap)
 
-        entities = em.getEntitiesWithComponents(
-            'position', 'physical'
-        )
+        for y in range(camera.height):
+            for x in range(camera.width):
+                try:
+                    mapX = x + camera.x
+                    mapY = y + camera.y
+                    entities = gamemap[mapX][mapY]
+                except Exception as e:
+                    raise e
+                    continue
 
-        for entity in entities:
-            position = entity.getComponent('position')
-            if position.stage != gamemap.stageIndex:
-                continue
+                for entity in entities:
+                    position = entity.getComponent('position')
+                    if position.stage != gamemap.stageIndex:
+                        continue
 
-            physical = entity.getComponent('physical')
-            x, y = position.x, position.y
-            visible = (x, y) in visible_tiles
+                    physical = entity.getComponent('physical')
+                    # x, y = position.x, position.y
+                    visible = (position.x, position.y) in visible_tiles
 
-            physical.visible = visible
+                    physical.visible = visible
 
-            if visible or gamemap.noFOW:
-                physical.explored = True
+                    if visible or gamemap.noFOW:
+                        physical.explored = True
 
-            entity.addComponent('physical', physical)
+                    entity.addComponent('physical', physical)

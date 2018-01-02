@@ -41,11 +41,12 @@ class MovementSystem(object):
             newY = position.y + dy
 
             if gamemap.is_blocked(newX, newY) == False:
+                gamemap[position.x][position.y].remove(entity)
                 position.x = newX
                 position.y = newY
                 entity.addComponent('position', position)
-                print(newX, newY)
                 engine.camera.move(newX, newY, gamemap)
+                gamemap[newX][newY].add(entity)
             else:
                 fov_recompute = False
 
