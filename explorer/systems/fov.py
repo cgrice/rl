@@ -46,6 +46,7 @@ class FOVSystem(object):
             physical = entity.getComponent('physical')
             x, y = position.x, position.y
             visible = (x, y) in visible_tiles
+
             physical.visible = visible
 
             if visible or gamemap.noFOW:

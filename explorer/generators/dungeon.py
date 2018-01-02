@@ -109,7 +109,7 @@ class DungeonGenerator(object):
         )
         gem.addComponent('trigger', gemTrigger)
         gem.addComponent('essential', {})
-        self.engine.entityManager.addEntity(gem)
+        gamemap.addEntity(gem, x=gemx, y=gemy)
         return True
 
     def _addTransports(self, gamemap, dungeon, exits = 0, entrances = 0):
@@ -132,7 +132,7 @@ class DungeonGenerator(object):
                 ]
             )
             stairsdown.addComponent('trigger', stairsTrigger)
-            self.engine.entityManager.addEntity(stairsdown)
+            gamemap.addEntity(stairsdown, x=exitx, y=exity)
         for x in range(entrances):
             startx, starty = gamemap.start
             stairsup = Entity()
@@ -147,6 +147,5 @@ class DungeonGenerator(object):
                 conditions = [HasComponents('player'),SteppedOn()]
             ) 
             stairsup.addComponent('trigger', stairsTrigger)
-            self.engine.entityManager.addEntity(stairsup)
-            # gamemap[startx][starty] = stairsup
+            gamemap.addEntity(stairsup, x=startx, y=starty)
         

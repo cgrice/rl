@@ -4,23 +4,31 @@ import datetime
 from explorer.managers import EntityManager
 from ecs import Entity
 from ecs.components import Position, Player, Physical, Appearance, LightSource, Inventory
+from explorer.camera import Camera
 
 class Engine(object):
     '''A game engine.
     '''
 
-    def __init__(self, terminal):
+    def __init__(self, terminal, width=0, height=0):
         self.terminal = terminal
+        self.width = width
+        self.height = height
+
         self.systems = []
         self.stages = {}
-        self.messages = []
-        self.entityManager = EntityManager()
         self.stageIndex = -1
+
+        self.entityManager = EntityManager()
+        self.camera = Camera(0, 0, self.width, self.height)
+        self.messages = []
         self.keys = None
         self.gui = None
         self.profile = False
         self.paused = False
         self.won = False
+
+        
 
     def run(self):
         # Each system returns an object which is passed along to
@@ -42,8 +50,8 @@ class Engine(object):
         if self.won:
             return False
         
-        if self.gui:
-            self.gui.render()
+        # if self.gui:
+        #     self.gui.render()
 
         self.terminal.refresh()
         self.terminal.clear()
@@ -81,6 +89,8 @@ class Engine(object):
         player.addComponent('moveable', {})
         player.addComponent('light_source', LightSource(radius=8, tint=(0, 0, 0, 0), strength=255))
         player.addComponent('inventory', Inventory())
+        self.camera.move(startx, starty, self.getStage())
+        self.getStage().addEntity(player, startx, starty)
         self.entityManager.addEntity(player)
 
 
@@ -92,7 +102,7 @@ class Engine(object):
         index = self.stageIndex
         for stage in args:
             index += 1
-            self.stages[index] = stage
+            self.addStage(index, stage)
 
     def getInput(self):
         user_input = self.terminal.read()
@@ -111,6 +121,8 @@ class Engine(object):
     def addStage(self, index, gamemap):
         gamemap.stageIndex = index
         self.stages[index] = gamemap
+        for entity in gamemap.getEntities():
+            self.entityManager.addEntity(entity)
 
     def hasStage(self, index):
         return index in self.stages

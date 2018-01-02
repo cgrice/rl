@@ -33,7 +33,8 @@ class GameMap:
         self.noFOW = False
         self.stageIndex = stageIndex
 
-        
+    def addEntity(self, entity, x, y):
+        self.tiles[x][y].add(entity)
 
     def in_bounds(self, x, y):
         return (x < self.width and x > 0 and y < self.height and y > 0)

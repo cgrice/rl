@@ -96,6 +96,7 @@ class LightingSystem(object):
         for entity in entities:
             position = entity.getComponent('position')
             appearance = entity.getComponent('appearance')
+
             if position.stage != gamemap.stageIndex or appearance.layer != 0:
                 continue
 

@@ -44,6 +44,8 @@ class MovementSystem(object):
                 position.x = newX
                 position.y = newY
                 entity.addComponent('position', position)
+                print(newX, newY)
+                engine.camera.move(newX, newY, gamemap)
             else:
                 fov_recompute = False
 
