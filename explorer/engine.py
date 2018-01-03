@@ -36,6 +36,9 @@ class Engine(object):
         # movement system tell the lighting system that it needs
         # to recalculate FOV
         prev = None
+        if self.profile:
+            totalLoop = 0
+
         for system in self.systems:
             if self.profile:
                 start = datetime.datetime.now()
@@ -45,13 +48,18 @@ class Engine(object):
             if self.profile:
                 end = datetime.datetime.now()
                 diff = end - start
+                totalLoop += diff.microseconds
                 print("%s time: %s" % (system.__class__, diff.microseconds))
+
+
+        if self.profile:
+            print("Total: %s seconds" % (totalLoop / (1000 * 1000)))
 
         if self.won:
             return False
         
-        # if self.gui:
-        #     self.gui.render()
+        if self.gui:
+            self.gui.render()
 
         self.terminal.refresh()
         self.terminal.clear()
@@ -83,7 +91,7 @@ class Engine(object):
             name, bgcolor=(0,0,0,0), fgcolor=(255, 255, 255, 255), 
             character=0xED0E, layer=10
         ))
-        player.addComponent('physical', Physical(visible=True, blocked = True))
+        player.addComponent('physical', Physical(visible=True, blocked = True, blocks_sight=True))
         player.addComponent('player', Player())
         player.addComponent('controllable', {})
         player.addComponent('moveable', {})
@@ -128,12 +136,12 @@ class Engine(object):
         return index in self.stages
 
     def setStage(self, index):
-        if self.stageIndex in self.stages:
-            for entity in self.stages[self.stageIndex].getEntities():
-                self.entityManager.removeEntity(entity)
+        # if self.stageIndex in self.stages:
+        #     for entity in self.stages[self.stageIndex].getEntities():
+        #         self.entityManager.removeEntity(entity)
         self.stageIndex = index
-        for entity in self.stages[index].getEntities():
-            self.entityManager.addEntity(entity)
+        # for entity in self.stages[index].getEntities():
+        #     self.entityManager.addEntity(entity)
         
     def getStage(self):
         return self.stages[self.stageIndex]

@@ -82,10 +82,10 @@ class LightingSystem(object):
                 continue
             visible_tiles = self.calculateVisible(source, gamemap)
             for (x, y) in visible_tiles:
-                mapX, mapY = camera.toCameraPosition(x, y)
-                if (mapX, mapY) not in lightingMap:
-                    lightingMap[(mapX, mapY)] = set()
-                lightingMap[(mapX, mapY)].add(source)
+                # mapX, mapY = camera.toCameraPosition(x, y)
+                if (x, y) not in lightingMap:
+                    lightingMap[(x, y)] = set()
+                lightingMap[(x, y)].add(source)
             valid_sources += 1
 
         if valid_sources == 0:
@@ -106,10 +106,10 @@ class LightingSystem(object):
                     position = entity.getComponent('position')
                     appearance = entity.getComponent('appearance')
 
-                    if position.stage != gamemap.stageIndex or appearance.layer != 0:
+                    if position == False or position.stage != gamemap.stageIndex or appearance.layer != 0:
                         continue
 
-                    lit = (position.x, position.y) in lightingMap
+                    lit = (mapX, mapY) in lightingMap
 
                     if lit:
                         
@@ -122,7 +122,8 @@ class LightingSystem(object):
 
                             appearance = entity.getComponent('appearance')
 
-                            distance = self._distance(source_position.x, source_position.y, x, y)
+                            sourcex, sourcey = camera.toCameraPosition(source_position.x, source_position.y)
+                            distance = self._distance(sourcex, sourcey, x, y)
                             lighting = self.calculateStrength(light.radius, distance, light.strength)
                             
                             if light.tint:

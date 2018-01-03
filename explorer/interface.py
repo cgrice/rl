@@ -99,6 +99,7 @@ class Interface(object):
             item = em.getEntity(itemid)
             appearance = item.getComponent('appearance')
             self.terminal.print(startx+1, starty+index, appearance.name)
+            index += 1
 
 
     def renderStats(self):

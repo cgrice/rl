@@ -47,7 +47,7 @@ class FOVSystem(object):
 
                 for entity in entities:
                     position = entity.getComponent('position')
-                    if position.stage != gamemap.stageIndex:
+                    if position == False or position.stage != gamemap.stageIndex:
                         continue
 
                     physical = entity.getComponent('physical')

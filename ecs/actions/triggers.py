@@ -5,11 +5,13 @@ class MoveStage(object):
         self.direction = direction
 
     def __call__(self, source, target):
+        position = target.getComponent('position')
         nextIndex = self.engine.stageIndex + self.direction
+        position.stage = nextIndex
+
+        self.engine.getStage().removeEntity(target, position.x, position.y)
         self.engine.setStage(nextIndex)
         stage = self.engine.getStage()
-        position = target.getComponent('position')
-        position.stage = nextIndex
 
         if self.direction > 0:
             x, y = stage.start
@@ -21,8 +23,10 @@ class MoveStage(object):
         position.x = x
         position.y = y
         target.addComponent('position', position)
-        appearance = target.getComponent('appearance')
+        self.engine.getStage().addEntity(target, position.x, position.y)
+        self.engine.camera.move(position.x, position.y, stage)
         
+        appearance = target.getComponent('appearance')
         self.engine.addMessage(
             '%s is now in floor %s' % (appearance.name, nextIndex), 
             (255,255,200,200)
