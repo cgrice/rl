@@ -113,7 +113,7 @@ engine.addSystems(
 )
 engine.setStage(0)
 engine.addPlayer('Emily', '@', (255,255,255,255))
-engine.profile = True
+engine.profile = False
 
 terminal.clear()
 engine.gui.render()

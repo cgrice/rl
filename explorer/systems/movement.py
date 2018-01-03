@@ -44,7 +44,7 @@ class MovementSystem(object):
 
             for mapEntity in entities:
 
-                interactable = mapEntity.hasComponent('interactable')
+                interactable = mapEntity.getComponent('interactable')
                 if interactable != False:
                     interactable.interacted = True
                     mapEntity.addComponent('interactable', interactable)

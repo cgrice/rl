@@ -5,3 +5,5 @@ from .physical import Physical
 from .light_source import LightSource
 from .trigger import Trigger
 from .inventory import Inventory
+from .interactable import Interactable
+from .dialogue import Dialogue

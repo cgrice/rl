@@ -3,9 +3,12 @@ from random import choice
 from explorer.gamemap import GameMap, Dungeon
 from explorer.gamemap.themes.dungeon import STANDARD_DUNGEON
 from ecs import Entity
-from ecs.components import Position, Appearance, Physical, Trigger, LightSource
-from ecs.actions.triggers import MoveStage, LogMessage, AddToInventory
+from ecs.components import Position, Appearance, Physical, \
+                           Trigger, LightSource, Interactable, Dialogue
+from ecs.actions.triggers import MoveStage, LogMessage, AddToInventory, \
+                                 ShowDialogue, ResetInteractions
 from ecs.conditions.location import SteppedOn
+from ecs.conditions.player import Interacted
 from ecs.conditions.components import HasComponents
 
 
@@ -117,6 +120,27 @@ class DungeonGenerator(object):
         statue.addComponent('physical', Physical(blocks_sight = False, blocked = True))
         statue.addComponent('appearance', Appearance('A mysterious statue', layer=1, character='$', fgcolor=(255, 200, 0, 200)))
         statue.addComponent('light_source', LightSource(radius=10, strength=200, tint=(255, 200, 0, 200)))
+        statue.addComponent('interactable', Interactable())
+        statueTrigger = Trigger(
+            actions = [
+                ResetInteractions(),
+                ShowDialogue(self.engine)
+            ],
+            conditions = [
+                HasComponents('player'),
+                Interacted(),
+            ]
+        )
+        statue.addComponent('trigger', statueTrigger)
+        welcome = """Welcome, stranger.
+I am the magic ape statue of Alliorg. 
+If you want to leave this place, you must 
+return to me the five magical gems
+that are scattered in the ruins of my palace. 
+
+Bring me the gems, and I will unlock the door 
+and allow your return to the outside world."""
+        statue.addComponent('dialogue', Dialogue(welcome=welcome))
         gamemap.addEntity(statue, x=statuex, y=statuey)
         return True
 

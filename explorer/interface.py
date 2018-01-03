@@ -1,5 +1,6 @@
 import tdl
 import textwrap
+import time
 
 PANEL_HEIGHT = 20
 MSG_WIDTH = 38
@@ -18,7 +19,9 @@ class Interface(object):
         self.width = width
         self.height = height
         self.messages = []
+        self.dialogue = ''
         self.showInventory = False
+        self.showDialogue = False
 
     def _clear(self):
         self.terminal.layer(100)
@@ -30,7 +33,7 @@ class Interface(object):
         self.terminal.bkcolor(self.terminal.color_from_argb(*color))
         self.terminal.clear_area(x, y, w, h)
 
-    def _widget(self, x, y, w, h, title = False):
+    def widget(self, x, y, w, h, title = False):
         # topLeft = 0xE5BD
         # topRight = 0xE5BF
         # bottomLeft = 0xE62F
@@ -71,13 +74,14 @@ class Interface(object):
 
     def render(self):
         self._clear()
-        self._widget(1, self.starty, MSG_WIDTH, self.height)
-        self._widget(MSG_WIDTH+3, self.starty, MSG_WIDTH, self.height)
+        self.widget(1, self.starty, MSG_WIDTH, self.height)
+        self.widget(MSG_WIDTH+3, self.starty, MSG_WIDTH, self.height)
         self.renderStats()
         self.renderMessages(self.engine.messages)
-        if self.showInventory:
+        if self.showDialogue:
+            self.renderDialogue()
+        elif self.showInventory:
             self.renderInventory()
-
         self.terminal.layer(0)
         self.terminal.color(self.terminal.color_from_argb(255, 0, 0, 0))
         self.terminal.bkcolor(self.terminal.color_from_argb(255, 0, 0, 0))
@@ -88,7 +92,7 @@ class Interface(object):
         self.terminal.layer(110)
         self.terminal.color(self.terminal.color_from_argb(255, 255, 255, 255))
         self.terminal.bkcolor(self.terminal.color_from_argb(255, 255, 255, 255))
-        self._widget(startx, starty, INVENTORY_WIDTH, INVENTORY_HEIGHT, title="CHARACTER INVENTORY")
+        self.widget(startx, starty, INVENTORY_WIDTH, INVENTORY_HEIGHT, title="CHARACTER INVENTORY")
 
         em = self.engine.entityManager
         player = em.getEntitiesWithComponents('player', 'appearance', 'position', 'inventory')[0]
@@ -101,6 +105,35 @@ class Interface(object):
             self.terminal.print(startx+1, starty+index, appearance.name)
             index += 1
 
+    def addDialogue(self, dialogue):
+        self.showDialogue = True
+        self.dialogue = dialogue
+
+    def renderDialogue(self):
+        lines = self.dialogue.split('\n')
+        rows = len(lines)
+        columns = len(max(lines, key=len))
+        padding = 2
+
+        terminal = self.terminal
+        terminal.layer(110)
+        terminal.color(terminal.color_from_argb(255, 255, 255, 255))
+        width = columns + padding*2
+        height = rows + padding*2
+        startx = (self.engine.width // 2) - (width // 2)
+        starty = (self.engine.height // 2) - (height // 2)
+        self.widget(startx, starty, width, height)
+
+        terminal.layer(111)
+        terminal.color(terminal.color_from_argb(255, 0, 0, 0))
+        for y, line in enumerate(lines):
+            for x, c in enumerate(line):
+                time.sleep(0.05)
+                terminal.put(startx+x+padding, starty+y+padding, c)
+                terminal.refresh()
+
+        self.dialogue = ''
+        self.showDialogue = False
 
     def renderStats(self):
         em = self.engine.entityManager

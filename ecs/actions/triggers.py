@@ -1,3 +1,5 @@
+import time
+
 class MoveStage(object):
 
     def __init__(self, engine, direction = 1):
@@ -60,3 +62,22 @@ class AddToInventory(object):
         source.removeComponent('position')
         source.removeComponent('trigger')
         em.addEntity(source)
+
+class ShowDialogue(object):
+
+    def __init__(self, engine):
+        self.engine = engine
+
+    def __call__(self, source, target):
+        dialogue = source.getComponent('dialogue')
+
+        if dialogue != False:
+            welcome = dialogue.welcome
+            self.engine.gui.addDialogue(welcome)
+
+class ResetInteractions(object):
+
+    def __call__(self, source, target):
+        interactable = source.getComponent('interactable')
+        interactable.interacted = False
+        source.addComponent('interactable', interactable)
