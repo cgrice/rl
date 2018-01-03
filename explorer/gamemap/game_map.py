@@ -43,6 +43,11 @@ class GameMap:
         return (x < self.width and x > 0 and y < self.height and y > 0)
 
     def is_blocked(self, x, y):
+        if x >= self.width or x < 0:
+            return False
+        elif y >= self.height or y < 0:
+            return False
+
         try:
             for entity in self.tiles[x][y]:
                 physical = entity.getComponent('physical')
@@ -51,8 +56,8 @@ class GameMap:
                     continue
 
                 blocked = physical.blocked
-                blocks_sight = physical.blocks_sight
-                if blocked and blocks_sight:
+                # blocks_sight = physical.blocks_sight
+                if blocked:
                     return True
             return False
         except:
@@ -63,10 +68,20 @@ class GameMap:
             return False
         elif y >= self.height or y < 0:
             return False
-        elif self.is_blocked(x, y) == True:
-            return False
-        else:
+
+        try:
+            for entity in self.tiles[x][y]:
+                physical = entity.getComponent('physical')
+
+                if physical == False:
+                    continue
+
+                blocks_sight = physical.blocks_sight
+                if blocks_sight:
+                    return False
             return True
+        except:
+            return False
 
     def createWall(self, x, y):
         color = self.wall_color

@@ -40,6 +40,15 @@ class MovementSystem(object):
             newX = position.x + dx
             newY = position.y + dy
 
+            entities = gamemap[newX][newY]
+
+            for mapEntity in entities:
+
+                interactable = mapEntity.hasComponent('interactable')
+                if interactable != False:
+                    interactable.interacted = True
+                    mapEntity.addComponent('interactable', interactable)
+
             if gamemap.is_blocked(newX, newY) == False:
                 gamemap[position.x][position.y].remove(entity)
                 position.x = newX

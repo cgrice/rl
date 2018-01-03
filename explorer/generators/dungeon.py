@@ -110,6 +110,14 @@ class DungeonGenerator(object):
         gem.addComponent('trigger', gemTrigger)
         gem.addComponent('essential', {})
         gamemap.addEntity(gem, x=gemx, y=gemy)
+
+        statue = Entity()
+        statuex, statuey = dungeon.randomPosition()
+        statue.addComponent('position', Position(x=statuex, y=statuey, stage=self.stage))
+        statue.addComponent('physical', Physical(blocks_sight = False, blocked = True))
+        statue.addComponent('appearance', Appearance('A mysterious statue', layer=1, character='$', fgcolor=(255, 200, 0, 200)))
+        statue.addComponent('light_source', LightSource(radius=10, strength=200, tint=(255, 200, 0, 200)))
+        gamemap.addEntity(statue, x=statuex, y=statuey)
         return True
 
     def _addTransports(self, gamemap, dungeon, exits = 0, entrances = 0):
