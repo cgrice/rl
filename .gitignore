@@ -1,1 +1,3 @@
 *.pyc
+callgrind.profile
+profile.out
