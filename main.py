@@ -27,6 +27,7 @@ terminal.open()
 terminal.set("font: dejavu16x16_gs_tc.png, size=16x16, codepage=tcod;")
 terminal.set("0xE000: tiles16x16.png, size=16x16;")
 terminal.set("0xEC00: characters16x16.png, size=16x16;")
+terminal.set("0xEF00: characters16x16.png, size=16x16, resize=64x64;")
 terminal.set("window: title=%s, size=%sx%s, cellsize=16x16, icon=icon;" % (TITLE, SCREEN_WIDTH, SCREEN_HEIGHT))
 
 terminal.printf(SCREEN_WIDTH//2-5, SCREEN_HEIGHT//2-2, 'EXPLORER!')
@@ -42,10 +43,10 @@ terminal.refresh()
 #     terminal.put(y, x, c)
 #     y += 1
 
-# c = 0xE000
+# c = 0xEF00
 # while True:
     
-#     terminal.put(0, 0, c)
+#     terminal.put(32, 32, c)
 #     terminal.printf(0, 30, str(hex(c)))
 #     terminal.refresh()
 #     i = terminal.read()
@@ -113,10 +114,10 @@ engine.addSystems(
 )
 engine.setStage(0)
 engine.addPlayer('Emily', '@', (255,255,255,255))
-engine.profile = False
+engine.profile = True
 
 terminal.clear()
-engine.gui.render()
+engine.gui.render(None)
 while engine.run():
     pass
 

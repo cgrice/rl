@@ -59,7 +59,7 @@ class Engine(object):
             return False
         
         if self.gui:
-            self.gui.render()
+            self.gui.render(self.keys)
 
         self.terminal.refresh()
         self.terminal.clear()

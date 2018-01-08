@@ -70,10 +70,11 @@ class ShowDialogue(object):
 
     def __call__(self, source, target):
         dialogue = source.getComponent('dialogue')
+        position = source.getComponent('position')
+        self.engine.gui.showInteractions(source, x=position.x, y=position.y)
 
-        if dialogue != False:
-            welcome = dialogue.welcome
-            self.engine.gui.addDialogue(welcome)
+        # if dialogue != False:
+        #     welcome = dialogue.welcome
 
 class ResetInteractions(object):
 

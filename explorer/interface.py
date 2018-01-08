@@ -20,8 +20,10 @@ class Interface(object):
         self.height = height
         self.messages = []
         self.dialogue = ''
+
         self.showInventory = False
         self.showDialogue = False
+        self.keys = None
 
     def _clear(self):
         self.terminal.layer(100)
@@ -72,7 +74,8 @@ class Interface(object):
             self.terminal.color(self.terminal.color_from_argb(255, 0, 0, 0))
             self.terminal.print(centerx, y+2, title)
 
-    def render(self):
+    def render(self, keys):
+        self.keys = keys
         self._clear()
         self.widget(1, self.starty, MSG_WIDTH, self.height)
         self.widget(MSG_WIDTH+3, self.starty, MSG_WIDTH, self.height)
@@ -105,6 +108,24 @@ class Interface(object):
             self.terminal.print(startx+1, starty+index, appearance.name)
             index += 1
 
+    def showInteractions(self, entity, x, y):
+        self.engine.paused = True
+        camera = self.engine.camera
+        x, y = camera.toCameraPosition(x, y)
+        y = y+1
+        self.terminal.layer(110)
+        self.terminal.color(self.terminal.color_from_argb(255, 255, 255, 255))
+        self.terminal.bkcolor(self.terminal.color_from_argb(255, 255, 255, 255))
+        self.widget(x, y, 10, 4)
+        self.terminal.layer(111)
+        self.terminal.color(self.terminal.color_from_argb(255, 0, 0, 0))
+        self.terminal.print(x+1, y+1, "Examine")
+        self.terminal.print(x+1, y+2, "Use")
+        self.terminal.print(x+1, y+3, "Talk")
+        print(x, y, 10, 4)
+        print(self.keys)
+        # return True
+
     def addDialogue(self, dialogue):
         self.showDialogue = True
         self.dialogue = dialogue
@@ -128,7 +149,7 @@ class Interface(object):
         terminal.color(terminal.color_from_argb(255, 0, 0, 0))
         for y, line in enumerate(lines):
             for x, c in enumerate(line):
-                time.sleep(0.05)
+                time.sleep(0.02)
                 terminal.put(startx+x+padding, starty+y+padding, c)
                 terminal.refresh()
 

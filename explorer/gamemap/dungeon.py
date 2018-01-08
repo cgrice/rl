@@ -156,8 +156,15 @@ class Dungeon:
         return choice(self.rooms)
 
     def _randomPosition(self):
+
         room = self._randomRoom()
-        return room.center()
+        (x, y) = room.center()
+
+        while self.map.is_blocked(x, y) == True:
+            room = self._randomRoom()
+            (x, y) = room.center()
+
+        return (x, y)
 
     def _connectRegions(self):
         connectorRegions = {}
